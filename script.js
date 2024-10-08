@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetScoresButton = document.getElementById('resetScoresButton');
     const nameForm = document.getElementById('nameForm');
     const playerNameInput = document.getElementById('playerName');
-    const leaderboardTable = document.getElementById('leaderboardTable');
+    const leaderboardTable = document.getElementById('leaderboardTable'); // Ensure this exists in your HTML
     const leaderboardBody = document.getElementById('leaderboardBody');
     const leaderboardLevelDisplay = document.getElementById('leaderboardLevel');
     const clickCountDisplay = document.getElementById('clickCount');
@@ -136,126 +136,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cheat code variables
     let cheatCode = 'woos';
     let cheatCodePosition = 0;
-    
+
     // --- Class Definitions ---
+
+    class Circle {
+        constructor(x, y, dx, dy, radius) {
+            this.x = x;
+            this.y = y;
+            this.dx = dx;
+            this.dy = dy;
+            this.radius = radius;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            ctx.fillStyle = '#0095DD';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        move() {
+            if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
+                this.dx = -this.dx;
+            }
+            if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
+                this.dy = -this.dy;
+            }
+            this.x += this.dx;
+            this.y += this.dy;
+        }
+
+        isClicked(mouseX, mouseY) {
+            const distance = Math.hypot(this.x - mouseX, this.y - mouseY);
+            return distance <= this.radius;
+        }
+
+        subdivide(circles, speedFactor, minDiameter) {
+            if (this.radius * 2 * speedFactor >= minDiameter) {
+                circles.push(new Circle(this.x, this.y, this.dx * speedFactor, this.dy * speedFactor, this.radius * speedFactor));
+                circles.push(new Circle(this.x, this.y, -this.dx * speedFactor, -this.dy * speedFactor, this.radius * speedFactor));
+            }
+        }
+    }
 
     class Particle {
         constructor(x, y) {
             this.x = x;
             this.y = y;
-            this.size = Math.random() * 5 + 2;
-            this.dx = (Math.random() - 0.5) * 4;
-            this.dy = (Math.random() - 0.5) * 4;
-            this.alpha = 1;
-        }
-
-        update() {
-            this.x += this.dx;
-            this.y += this.dy;
-            this.alpha -= 0.02;
-            this.size *= 0.95;
-        }
-
-        draw() {
-            ctx.fillStyle = `rgba(255, 215, 0, ${this.alpha})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    class Circle {
-        constructor(x, y, dx, dy, diameter) {
-            this.x = x;
-            this.y = y;
-            this.dx = dx;
-            this.dy = dy;
-            this.diameter = diameter;
-            this.radius = diameter / 2;
-            this.color = 'black';
-            this.colorTimer = 0;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = (Math.random() - 0.5) * 2;
+            this.speedY = (Math.random() - 0.5) * 2;
+            this.color = 'rgba(255, 165, 0, 0.8)';
+            this.life = 60; // Frames
         }
 
         draw() {
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.closePath();
         }
 
         update() {
-            this.x += this.dx;
-            this.y += this.dy;
-
-            const epsilon = 0.1;
-
-            // Check collision with walls
-            if (this.x + this.radius > canvas.width) {
-                this.x = canvas.width - this.radius - epsilon;
-                this.dx *= -0.98;
-            }
-            if (this.x - this.radius < 0) {
-                this.x = this.radius + epsilon;
-                this.dx *= -0.98;
-            }
-            if (this.y + this.radius > canvas.height) {
-                this.y = canvas.height - this.radius - epsilon;
-                this.dy *= -0.98;
-            }
-            if (this.y - this.radius < 0) {
-                this.y = this.radius + epsilon;
-                this.dy *= -0.98;
-            }
-
-            // Handle color reset
-            if (this.colorTimer > 0) {
-                this.colorTimer--;
-                if (this.colorTimer === 0) {
-                    this.color = 'black';
-                }
-            }
-
-            this.draw();
-        }
-
-        isClicked(mx, my) {
-            const distance = Math.hypot(mx - this.x, my - this.y);
-            return distance < this.radius;
-        }
-
-        subdivide(circlesArray, speedIncreaseFactor, minDiameter) {
-            if (this.radius * 2 >= minDiameter) {
-                const newDiameter = this.diameter / 2;
-                const newSpeed = Math.hypot(this.dx, this.dy) * speedIncreaseFactor;
-
-                const angle1 = Math.random() * Math.PI * 2;
-                const angle2 = angle1 + Math.PI / 2;
-
-                circlesArray.push(new Circle(this.x, this.y, newSpeed * Math.cos(angle1), newSpeed * Math.sin(angle1), newDiameter));
-                circlesArray.push(new Circle(this.x, this.y, newSpeed * Math.cos(angle2), newSpeed * Math.sin(angle2), newDiameter));
-            }
-        }
-
-        collide() {
-            if (soundsEnabled) {
-                collisionSound.play().catch(error => {
-                    console.error('Error playing collision sound:', error);
-                });
-            }
-            this.color = 'red';
-            this.colorTimer = 10;
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.life--;
         }
     }
 
     // --- Function Definitions ---
-
-    function drawInitialScreen() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 0.5; // Set opacity to 50%
-        ctx.drawImage(popixTitleImage, 0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 1.0; // Reset opacity
-    }
 
     function startGame() {
         console.log(`Starting game at Level ${level}.`);
@@ -284,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the canvas and hide the title image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        setLevelMusic();
+        setLevelMusic(); // Define and call this function
 
         // Create initial circles
         for (let i = 0; i < level; i++) {
@@ -308,6 +259,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000); // Every 2 seconds
 
         animate();
+    }
+
+    function setLevelMusic() {
+        // Pause any existing level music
+        if (!levelMusic.paused) {
+            levelMusic.pause();
+            levelMusic.currentTime = 0;
+        }
+        
+        // Set the source based on the current level
+        levelMusic.src = `sounds/level${level}.mp3`; // Ensure these files exist
+        
+        // Play the level music if music is enabled
+        if (musicEnabled) {
+            levelMusic.play().then(() => {
+                console.log(`Playing music for Level ${level}.`);
+            }).catch(error => {
+                console.error('Error playing level music:', error);
+                // Optionally, set a default music track
+                levelMusic.src = 'sounds/default.mp3';
+                levelMusic.play().catch(err => {
+                    console.error('Error playing default music:', err);
+                });
+            });
+        }
     }
 
     function updateUI() {
@@ -388,6 +364,79 @@ document.addEventListener('DOMContentLoaded', () => {
             missedClicks++; // Increment missed clicks
             updateUI();
         }
+
+        // Check for game over condition (all circles cleared)
+        if (circles.length === 0) {
+            endLevel();
+        }
+    }
+
+    function createParticleEffect(x, y) {
+        for (let i = 0; i < 10; i++) {
+            particles.push(new Particle(x, y));
+        }
+    }
+
+    function animate() {
+        animationId = requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        circles.forEach(circle => {
+            circle.draw();
+            circle.move();
+        });
+
+        particles.forEach((particle, index) => {
+            particle.draw();
+            particle.update();
+
+            // Remove particles that have "died"
+            if (particle.life <= 0) {
+                particles.splice(index, 1);
+            }
+        });
+    }
+
+    function updateTime() {
+        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+        timeElapsedDisplay.textContent = timeElapsed;
+    }
+
+    function decrementScore() {
+        if (score > 0) {
+            score -= 10; // Decrement by 10 points every interval
+            liveScoreDisplay.textContent = score;
+        }
+    }
+
+    function endLevel() {
+        console.log('Ending level.');
+        cancelAnimationFrame(animationId);
+        clearInterval(timerInterval);
+        clearInterval(scoreInterval);
+
+        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+        timeElapsedDisplay.textContent = timeElapsed;
+
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        // Prompt for name after completing the level
+        console.log(`Level ${level} completed. Prompting for player name.`);
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'none';
+        nameForm.style.display = 'flex';
+        nameFormMessage.textContent = ''; // Clear previous messages
+
+        // Display End of Level Score
+        endLevelScoreDiv.innerHTML = `
+            <p>Your Score: <strong>${score}</strong></p>
+            <p>Clicks/Missed: <strong>${clickCount}/${missedClicks}</strong></p>
+            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+        `;
     }
 
     function submitScore(event) {
@@ -513,13 +562,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const clicksCell = document.createElement('td');
                 // Format clicks and missed clicks
                 const clicksText = document.createElement('span');
-                clicksText.textContent = entry.clicks;
+                clicksText.textContent = entry.clicks || 0; // Default to 0 if undefined
 
                 const slashText = document.createElement('span');
                 slashText.textContent = '/';
 
                 const missedClicksText = document.createElement('span');
-                missedClicksText.textContent = entry.missedClicks || 0; // Default to 0 if undefined
+                missedClicksText.textContent = entry.missedClicks !== undefined ? entry.missedClicks : 0; // Default to 0 if undefined
                 missedClicksText.style.color = 'red';
 
                 clicksCell.appendChild(clicksText);
@@ -528,6 +577,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const scoreCell = document.createElement('td');
                 scoreCell.textContent = entry.score;
+
+                // Style cells
+                rankCell.style.border = '1px solid #ccc';
+                rankCell.style.padding = '6px 8px';
+
+                nameCell.style.border = '1px solid #ccc';
+                nameCell.style.padding = '6px 8px';
+
+                timeCell.style.border = '1px solid #ccc';
+                timeCell.style.padding = '6px 8px';
+
+                clicksCell.style.border = '1px solid #ccc';
+                clicksCell.style.padding = '6px 8px';
+
+                scoreCell.style.border = '1px solid #ccc';
+                scoreCell.style.padding = '6px 8px';
 
                 row.appendChild(rankCell);
                 row.appendChild(nameCell);
@@ -545,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
     }
-    
+
     function getTopScoresPerLevel() {
         const topScores = [];
         for (let lvl = 1; lvl <= maxLevel; lvl++) {
@@ -569,6 +634,187 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return topScores;
     }
+
+    function endGame() {
+        console.log('Game completed all levels.');
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'none';
+        nameForm.style.display = 'none';
+
+        // Get the top scores per level
+        const topScores = getTopScoresPerLevel();
+
+        // Create a summary of top scores for all levels
+        const summaryDiv = document.createElement('div');
+        summaryDiv.style.width = '100%';
+
+        const summaryTitle = document.createElement('h2');
+        summaryTitle.textContent = 'Top Scores Per Level';
+        summaryTitle.style.textAlign = 'center';
+        summaryDiv.appendChild(summaryTitle);
+
+        const summaryMessage = document.createElement('p');
+        summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
+        summaryDiv.appendChild(summaryMessage);
+
+        const summaryTable = document.createElement('table');
+        summaryTable.style.width = '100%';
+        summaryTable.style.borderCollapse = 'collapse';
+        summaryTable.style.marginBottom = '20px';
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Level', 'Name', 'Score', 'Clicks/Missed', 'Time (s)'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '6px 8px';
+            th.style.backgroundColor = '#f2f2f2';
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        summaryTable.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        topScores.forEach(entry => {
+            const row = document.createElement('tr');
+
+            const levelCell = document.createElement('td');
+            levelCell.textContent = entry.level;
+            levelCell.style.border = '1px solid #ccc';
+            levelCell.style.padding = '6px 8px';
+            row.appendChild(levelCell);
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = entry.name;
+            nameCell.style.border = '1px solid #ccc';
+            nameCell.style.padding = '6px 8px';
+            row.appendChild(nameCell);
+
+            const scoreCell = document.createElement('td');
+            scoreCell.textContent = entry.score;
+            scoreCell.style.border = '1px solid #ccc';
+            scoreCell.style.padding = '6px 8px';
+            row.appendChild(scoreCell);
+
+            const clicksCell = document.createElement('td');
+            // Format clicks and missed clicks
+            const clicksText = document.createElement('span');
+            clicksText.textContent = entry.clicks || 0; // Default to 0 if undefined
+
+            const slashText = document.createElement('span');
+            slashText.textContent = '/';
+
+            const missedClicksText = document.createElement('span');
+            missedClicksText.textContent = entry.missedClicks !== undefined ? entry.missedClicks : 0; // Default to 0 if undefined
+            missedClicksText.style.color = 'red';
+
+            clicksCell.appendChild(clicksText);
+            clicksCell.appendChild(slashText);
+            clicksCell.appendChild(missedClicksText);
+
+            clicksCell.style.border = '1px solid #ccc';
+            clicksCell.style.padding = '6px 8px';
+            row.appendChild(clicksCell);
+
+            const timeCell = document.createElement('td');
+            timeCell.textContent = entry.time;
+            timeCell.style.border = '1px solid #ccc';
+            timeCell.style.padding = '6px 8px';
+            row.appendChild(timeCell);
+
+            tbody.appendChild(row);
+        });
+
+        summaryTable.appendChild(tbody);
+        summaryDiv.appendChild(summaryTable);
+
+        // Reset Game Button
+        const resetButton = document.createElement('button');
+        resetButton.textContent = 'Reset Game';
+        resetButton.id = 'finalResetButton';
+        resetButton.style.padding = '10px 20px';
+        resetButton.style.fontSize = '16px';
+        resetButton.style.backgroundColor = '#4CAF50';
+        resetButton.style.color = 'white';
+        resetButton.style.border = 'none';
+        resetButton.style.borderRadius = '5px';
+        resetButton.style.cursor = 'pointer';
+        resetButton.style.transition = 'background-color 0.3s ease';
+        resetButton.addEventListener('click', resetGame);
+        resetButton.addEventListener('mouseover', () => {
+            resetButton.style.backgroundColor = '#45a049';
+        });
+        resetButton.addEventListener('mouseout', () => {
+            resetButton.style.backgroundColor = '#4CAF50';
+        });
+
+        summaryDiv.appendChild(resetButton);
+
+        // Clear existing overlay content and append summary
+        buttonOverlay.querySelector('#overlayContent').innerHTML = '';
+        buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        // Play final music
+        if (musicEnabled) {
+            finalMusic.play().then(() => {
+                console.log('Playing final scoreboard music.');
+            }).catch(error => {
+                console.error('Error playing final music:', error);
+            });
+        }
+    }
+
+    function loadLeaderboard(callback) {
+        console.log('Loading leaderboard data from Firebase.');
+        const leaderboardRef = database.ref('leaderboard');
+
+        leaderboardRef.once('value')
+            .then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // Convert the data from an object to an array
+                    leaderboard = Object.values(data);
+                    console.log('Leaderboard data loaded:', leaderboard);
+                } else {
+                    leaderboard = [];
+                    console.log('No leaderboard data available.');
+                }
+                if (callback) callback();
+            })
+            .catch((error) => {
+                console.error('Error loading leaderboard:', error);
+            });
+    }
+
+    function getTopScoresPerLevel() {
+        const topScores = [];
+        for (let lvl = 1; lvl <= maxLevel; lvl++) {
+            const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
+            if (entriesForLevel.length > 0) {
+                // Sort entries for this level by score descending
+                entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
+                // Get the top entry
+                topScores.push(entriesForLevel[0]);
+            } else {
+                // No entries for this level
+                topScores.push({
+                    level: lvl,
+                    name: 'N/A',
+                    score: 'N/A',
+                    clicks: 'N/A',
+                    missedClicks: 'N/A',
+                    time: 'N/A'
+                });
+            }
+        }
+        return topScores;
+    }
+
 
     function endGame() {
         console.log('Game completed all levels.');

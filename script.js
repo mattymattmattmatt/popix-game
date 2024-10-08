@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const INTRO_VOLUME = 0.6; // 60%
     const LEVEL_VOLUME = 0.4; // 40%
     const SOUND_VOLUME = 1.0; // 100% for sound effects
+    const FINAL_VOLUME = 0.5; // Volume for final music (adjust as desired)
 
     // Flags to track if sounds and music are enabled
     let soundsEnabled = true;
@@ -97,6 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let levelMusic = new Audio();
     levelMusic.loop = true;
     levelMusic.volume = LEVEL_VOLUME;
+
+    // Final Scoreboard Music
+    let finalMusic = new Audio('sounds/final.mp3');
+    finalMusic.loop = true;
+    finalMusic.volume = FINAL_VOLUME;
 
     // Game variables
     let circles = [];
@@ -514,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-       function endLevel() {
+function endLevel() {
         console.log('Ending level.');
         cancelAnimationFrame(animationId);
         clearInterval(timerInterval);
@@ -578,24 +584,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayMessage('Your score has been added to the leaderboard!', 'success', 'overlayButtonsMessage');
                 console.log(`Added new leaderboard entry for ${playerName} at Level ${level}.`);
                 // Reload the leaderboard
-                loadLeaderboard(updateLeaderboard);
+                if (level >= maxLevel) {
+                    // If the game has reached maxLevel, reload the leaderboard and then end the game
+                    loadLeaderboard(() => {
+                        console.log('Leaderboard reloaded after submitting level 10 score.');
+                        // Introduce a slight delay before calling endGame()
+                        setTimeout(() => {
+                            endGame();
+                        }, 2000); // 2000 milliseconds = 2 seconds delay
+                    });
+                } else {
+                    loadLeaderboard(updateLeaderboard);
+                    // Show options to proceed to next level or try again
+                    nameForm.style.display = 'none';
+                    overlayButtons.style.display = 'flex';
+                    displayMessage('', '', 'nameFormMessage'); // Clear previous messages
+                }
             })
             .catch((error) => {
                 displayMessage('Error submitting score.', 'error', 'overlayButtonsMessage');
                 console.error('Error submitting score:', error);
             });
-
-        // Update UI
-        nameForm.style.display = 'none';
-        displayMessage('', '', 'nameFormMessage'); // Clear previous messages
-
-        if (level >= maxLevel) {
-            // If the game has reached maxLevel, end the game after submitting the score
-            endGame();
-        } else {
-            // Show options to proceed to next level or try again
-            overlayButtons.style.display = 'flex';
-        }
     }
 
     function endGame() {
@@ -707,8 +716,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Draw the initial screen with the title image
         drawInitialScreen();
-    }
 
+        // Play final music
+        if (musicEnabled) {
+            finalMusic.play().then(() => {
+                console.log('Playing final scoreboard music.');
+            }).catch(error => {
+                console.error('Error playing final music:', error);
+            });
+        }
+    }
+    
     function getTopScoresPerLevel() {
         const topScores = [];
         for (let lvl = 1; lvl <= maxLevel; lvl++) {
@@ -934,6 +952,11 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonOverlay.style.display = 'none';
         levelMusic.pause();
         levelMusic.currentTime = 0;
+
+        // Stop final music if playing
+        finalMusic.pause();
+        finalMusic.currentTime = 0;
+
         loadLeaderboard(updateLeaderboard);
 
         // Reset the overlay content

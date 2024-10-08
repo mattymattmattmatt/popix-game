@@ -806,24 +806,36 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLeaderboard();
     }
 
-    function resetScores() {
-        const confirmReset = confirm('Are you sure you want to reset all scores? This action cannot be undone.');
-        if (confirmReset) {
-            // Resetting scores in Firebase
-            const leaderboardRef = database.ref('leaderboard');
-            leaderboardRef.remove()
-                .then(() => {
-                    alert('All scores have been reset.');
-                    console.log('All scores have been reset.');
-                    // Reload the leaderboard
-                    loadLeaderboard(updateLeaderboard);
-                })
-                .catch((error) => {
-                    alert('Error resetting scores.');
-                    console.error('Error resetting scores:', error);
-                });
-        }
+function resetScores() {
+    const enteredPassword = prompt('Please enter the password to reset the scores:');
+    if (enteredPassword === null) {
+        // User pressed cancel
+        console.log('Reset scores action cancelled by user.');
+        return;
     }
+
+    if (enteredPassword === 'ban00bles') {
+        // Password is correct
+        console.log('Password correct. Resetting scores.');
+        // Proceed to reset the scores in Firebase
+        database.ref('leaderboard').remove()
+            .then(() => {
+                alert('All scores have been reset.');
+                console.log('All scores have been reset in the database.');
+                // Reload the leaderboard to reflect changes
+                loadLeaderboard(updateLeaderboard);
+            })
+            .catch((error) => {
+                alert('Error resetting scores.');
+                console.error('Error resetting scores:', error);
+            });
+    } else {
+        // Password is incorrect
+        alert('Incorrect password. Scores have not been reset.');
+        console.warn('Incorrect password entered for resetting scores.');
+    }
+}
+
 
     function resetGame() {
         console.log('Resetting the game.');

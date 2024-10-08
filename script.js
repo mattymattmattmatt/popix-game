@@ -1,3 +1,6 @@
+let cheatCode = 'woos';
+let cheatCodePosition = 0;
+
 // Ensure the script runs after the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
@@ -543,116 +546,115 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-        console.log('Game completed all levels.');
-        buttonOverlay.style.display = 'flex';
-        overlayButtons.style.display = 'none';
-        nameForm.style.display = 'none';
+    console.log('Game completed all levels.');
+    buttonOverlay.style.display = 'flex';
+    overlayButtons.style.display = 'none';
+    nameForm.style.display = 'none';
 
-        // Create a summary of all scores for all levels
-        const summaryDiv = document.createElement('div');
-        summaryDiv.style.width = '100%';
+    // Get the top scores per level
+    const topScores = getTopScoresPerLevel();
 
-        const summaryTitle = document.createElement('h2');
-        summaryTitle.textContent = 'Congratulations!';
-        summaryTitle.style.textAlign = 'center';
-        summaryDiv.appendChild(summaryTitle);
+    // Create a summary of top scores for all levels
+    const summaryDiv = document.createElement('div');
+    summaryDiv.style.width = '100%';
 
-        const summaryMessage = document.createElement('p');
-        summaryMessage.textContent = 'You have completed all 10 levels of Popix. Here are your scores:';
-        summaryDiv.appendChild(summaryMessage);
+    const summaryTitle = document.createElement('h2');
+    summaryTitle.textContent = 'Top Scores Per Level';
+    summaryTitle.style.textAlign = 'center';
+    summaryDiv.appendChild(summaryTitle);
 
-        const summaryTable = document.createElement('table');
-        summaryTable.style.width = '100%';
-        summaryTable.style.borderCollapse = 'collapse';
-        summaryTable.style.marginBottom = '20px';
+    const summaryMessage = document.createElement('p');
+    summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
+    summaryDiv.appendChild(summaryMessage);
 
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Level', 'Score', 'Clicks', 'Time (s)'].forEach(text => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            th.style.border = '1px solid #ccc';
-            th.style.padding = '6px 8px';
-            th.style.backgroundColor = '#f2f2f2';
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        summaryTable.appendChild(thead);
+    const summaryTable = document.createElement('table');
+    summaryTable.style.width = '100%';
+    summaryTable.style.borderCollapse = 'collapse';
+    summaryTable.style.marginBottom = '20px';
 
-        const tbody = document.createElement('tbody');
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['Level', 'Name', 'Score', 'Clicks', 'Time (s)'].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        th.style.border = '1px solid #ccc';
+        th.style.padding = '6px 8px';
+        th.style.backgroundColor = '#f2f2f2';
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    summaryTable.appendChild(thead);
 
-        // Filter leaderboard entries for all levels
-        const playerName = standardizeName(playerNameInput.value.trim());
-        const playerEntries = leaderboard.filter(entry => entry.name === playerName && entry.level <= maxLevel);
+    const tbody = document.createElement('tbody');
 
-        playerEntries.sort((a, b) => a.level - b.level); // Sort by level ascending
+    topScores.forEach(entry => {
+        const row = document.createElement('tr');
 
-        playerEntries.forEach(entry => {
-            const row = document.createElement('tr');
+        const levelCell = document.createElement('td');
+        levelCell.textContent = entry.level;
+        levelCell.style.border = '1px solid #ccc';
+        levelCell.style.padding = '6px 8px';
+        row.appendChild(levelCell);
 
-            const levelCell = document.createElement('td');
-            levelCell.textContent = entry.level;
-            levelCell.style.border = '1px solid #ccc';
-            levelCell.style.padding = '6px 8px';
-            row.appendChild(levelCell);
+        const nameCell = document.createElement('td');
+        nameCell.textContent = entry.name;
+        nameCell.style.border = '1px solid #ccc';
+        nameCell.style.padding = '6px 8px';
+        row.appendChild(nameCell);
 
-            const scoreCell = document.createElement('td');
-            scoreCell.textContent = entry.score;
-            scoreCell.style.border = '1px solid #ccc';
-            scoreCell.style.padding = '6px 8px';
-            row.appendChild(scoreCell);
+        const scoreCell = document.createElement('td');
+        scoreCell.textContent = entry.score;
+        scoreCell.style.border = '1px solid #ccc';
+        scoreCell.style.padding = '6px 8px';
+        row.appendChild(scoreCell);
 
-            const clicksCell = document.createElement('td');
-            clicksCell.textContent = entry.clicks;
-            clicksCell.style.border = '1px solid #ccc';
-            clicksCell.style.padding = '6px 8px';
-            // Highlight in gold if no misses occurred
-            if (entry.missedClick === 'false' || entry.missedClick === false) {
-                clicksCell.classList.add('no-miss-clicks');
-            }
-            row.appendChild(clicksCell);
+        const clicksCell = document.createElement('td');
+        clicksCell.textContent = entry.clicks;
+        clicksCell.style.border = '1px solid #ccc';
+        clicksCell.style.padding = '6px 8px';
+        row.appendChild(clicksCell);
 
-            const timeCell = document.createElement('td');
-            timeCell.textContent = entry.time;
-            timeCell.style.border = '1px solid #ccc';
-            timeCell.style.padding = '6px 8px';
-            row.appendChild(timeCell);
+        const timeCell = document.createElement('td');
+        timeCell.textContent = entry.time;
+        timeCell.style.border = '1px solid #ccc';
+        timeCell.style.padding = '6px 8px';
+        row.appendChild(timeCell);
 
-            tbody.appendChild(row);
-        });
+        tbody.appendChild(row);
+    });
 
-        summaryTable.appendChild(tbody);
-        summaryDiv.appendChild(summaryTable);
+    summaryTable.appendChild(tbody);
+    summaryDiv.appendChild(summaryTable);
 
-        // Reset Game Button
-        const resetButton = document.createElement('button');
-        resetButton.textContent = 'Reset Game';
-        resetButton.id = 'finalResetButton';
-        resetButton.style.padding = '10px 20px';
-        resetButton.style.fontSize = '16px';
+    // Reset Game Button
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Reset Game';
+    resetButton.id = 'finalResetButton';
+    resetButton.style.padding = '10px 20px';
+    resetButton.style.fontSize = '16px';
+    resetButton.style.backgroundColor = '#4CAF50';
+    resetButton.style.color = 'white';
+    resetButton.style.border = 'none';
+    resetButton.style.borderRadius = '5px';
+    resetButton.style.cursor = 'pointer';
+    resetButton.style.transition = 'background-color 0.3s ease';
+    resetButton.addEventListener('click', resetGame);
+    resetButton.addEventListener('mouseover', () => {
+        resetButton.style.backgroundColor = '#45a049';
+    });
+    resetButton.addEventListener('mouseout', () => {
         resetButton.style.backgroundColor = '#4CAF50';
-        resetButton.style.color = 'white';
-        resetButton.style.border = 'none';
-        resetButton.style.borderRadius = '5px';
-        resetButton.style.cursor = 'pointer';
-        resetButton.style.transition = 'background-color 0.3s ease';
-        resetButton.addEventListener('click', resetGame);
-        resetButton.addEventListener('mouseover', () => {
-            resetButton.style.backgroundColor = '#45a049';
-        });
-        resetButton.addEventListener('mouseout', () => {
-            resetButton.style.backgroundColor = '#4CAF50';
-        });
+    });
 
-        summaryDiv.appendChild(resetButton);
+    summaryDiv.appendChild(resetButton);
 
-        // Clear existing overlay content and append summary
-        buttonOverlay.querySelector('#overlayContent').innerHTML = '';
-        buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
+    // Clear existing overlay content and append summary
+    buttonOverlay.querySelector('#overlayContent').innerHTML = '';
+    buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
 
-        // Draw the initial screen with the title image
-        drawInitialScreen();
-    }
+    // Draw the initial screen with the title image
+    drawInitialScreen();
+}
 
     // Submit score to Firebase
     function submitScore(event) {
@@ -838,26 +840,40 @@ function resetScores() {
 
 
     function resetGame() {
-        console.log('Resetting the game.');
-        confirmationDialog.style.display = 'none';
-        level = 1;
-        circles = [];
-        particles = [];
-        clickCount = 0;
-        comboMultiplier = 1;
-        score = 0;
-        missedClick = false;
-        currentPage = 1;
-        startGameButton.style.display = 'block';
-        rulesButton.style.display = 'block';
-        buttonOverlay.style.display = 'none';
-        levelMusic.pause();
-        levelMusic.currentTime = 0;
-        loadLeaderboard(updateLeaderboard);
+    console.log('Resetting the game.');
+    confirmationDialog.style.display = 'none';
+    level = 1;
+    currentLevelDisplay.textContent = level;
+    leaderboardLevelDisplay.textContent = level;
+    circles = [];
+    particles = [];
+    clickCount = 0;
+    comboMultiplier = 1;
+    score = 0;
+    missedClick = false;
+    currentPage = 1;
+    gameStarted = false; // Reset gameStarted flag
+    cheatCodePosition = 0; // Reset cheat code position
+    buttonOverlay.style.display = 'none';
+    levelMusic.pause();
+    levelMusic.currentTime = 0;
+    loadLeaderboard(updateLeaderboard);
 
-        // Draw the initial screen with the title image
-        drawInitialScreen();
-    }
+    // Reset the overlay content
+    const overlayContent = buttonOverlay.querySelector('#overlayContent');
+    overlayContent.innerHTML = '';
+    overlayContent.appendChild(nameForm);
+    overlayContent.appendChild(overlayButtons);
+    nameForm.style.display = 'none';
+    overlayButtons.style.display = 'none';
+
+    // Show the start and rules buttons
+    startGameButton.style.display = 'block';
+    rulesButton.style.display = 'block';
+
+    // Draw the initial screen with the title image
+    drawInitialScreen();
+}
 
     function showConfirmationDialog() {
         console.log('Showing confirmation dialog.');
@@ -1001,5 +1017,79 @@ function resetScores() {
         // Restart the current level
         startGame();
     }
+
+    function getTopScoresPerLevel() {
+    const topScores = [];
+    for (let lvl = 1; lvl <= maxLevel; lvl++) {
+        const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
+        if (entriesForLevel.length > 0) {
+            // Sort entries for this level by score descending
+            entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
+            // Get the top entry
+            topScores.push(entriesForLevel[0]);
+        } else {
+            // No entries for this level
+            topScores.push({
+                level: lvl,
+                name: 'N/A',
+                score: 'N/A',
+                clicks: 'N/A',
+                time: 'N/A',
+                missedClick: 'N/A'
+            });
+        }
+    }
+    return topScores;
+}
+    function handleKeyPress(event) {
+    if (level === 1 && gameStarted) {
+        const key = event.key.toLowerCase();
+        if (key === cheatCode[cheatCodePosition]) {
+            cheatCodePosition++;
+            if (cheatCodePosition === cheatCode.length) {
+                // Cheat code entered successfully
+                console.log('Cheat code entered: Level skip activated.');
+                cheatCodePosition = 0;
+                skipToLevel9End();
+            }
+        } else {
+            cheatCodePosition = 0; // Reset if the sequence breaks
+        }
+    }
+}
+function skipToLevel9End() {
+    // Stop the current level
+    cancelAnimationFrame(animationId);
+    clearInterval(timerInterval);
+    clearInterval(scoreInterval);
+
+    level = 9;
+    currentLevelDisplay.textContent = level;
+    leaderboardLevelDisplay.textContent = level;
+    timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+    timeElapsedDisplay.textContent = timeElapsed;
+
+    levelMusic.pause();
+    levelMusic.currentTime = 0;
+
+    // Draw the initial screen with the title image
+    drawInitialScreen();
+
+    // Simulate end of level
+    console.log(`Level ${level} skipped to end via cheat code.`);
+    buttonOverlay.style.display = 'flex';
+    overlayButtons.style.display = 'flex';
+    nameForm.style.display = 'none'; // Hide name form
+    endLevelScoreDiv.innerHTML = `
+        <p>Your Score: <strong>${score}</strong></p>
+        <p>Clicks: <strong>${clickCount}</strong></p>
+        <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+    `;
+}
+function resetGame() {
+    // ... existing code ...
+    cheatCodePosition = 0; // Reset cheat code position
+}
+document.addEventListener('keydown', handleKeyPress);
 
 });

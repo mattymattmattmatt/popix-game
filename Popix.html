@@ -2,224 +2,635 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Popix Game</title>
+    <title>Popix</title>
     <!-- Link to Google Fonts for the "Poppins" font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-
-    <!-- Firebase SDKs -->
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-    <!-- Firebase Analytics -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js"></script>
-    <!-- Firebase Realtime Database -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
-
     <style>
-        /* Basic CSS Reset */
+        /* General Reset and Styling */
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
 
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            height: 100vh;
             font-family: 'Poppins', sans-serif;
-            background-color: #f0f0f0;
-            color: #333;
-            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #mainContainer {
+            display: flex;
+            width: 95%;
+            max-width: 1400px;
+            height: 95vh;
+            position: relative;
+        }
+
+        /* Left Panel Styling */
+        #leftPanel {
+            width: 35%;
+            max-width: 500px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            margin-right: 20px;
         }
 
-        /* Game Container */
-        #gameContainer {
-            width: 800px;
-            height: 600px;
-            background-color: #fff;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Leaderboard Overlay */
-        #leaderboardOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        #leaderboardBanner {
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
+            max-width: 480px;
+            height: auto;
+            margin-bottom: 20px;
+            object-fit: contain;
         }
 
-        #leaderboardContent {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 500px;
-            max-height: 80vh;
+        #leaderboard {
+            width: 100%;
             overflow-y: auto;
+            max-height: 70%;
         }
 
-        #leaderboardContent h2 {
-            margin-bottom: 10px;
+        #leaderboard h2 {
+            text-transform: uppercase;
+            font-size: 20px;
+            margin: 0 0 10px 0;
             text-align: center;
         }
 
-        #leaderboardTable {
+        /* Table Styling */
+        #leaderboard table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: auto;
         }
 
-        #leaderboardTable th, #leaderboardTable td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        #leaderboard th, #leaderboard td {
+            border: 1px solid #ccc;
+            padding: 6px 8px;
             text-align: center;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        #leaderboardTable th {
+        #leaderboard th {
             background-color: #f2f2f2;
         }
 
-        /* Name Submission Form */
-        #nameFormOverlay {
+        /* Controls Container Styling */
+        #controlsContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        /* Reset Scores Button Styling */
+        #resetScoresButton {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #resetScoresButton:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Sound and Music Toggle Buttons Styling */
+        #soundToggleButton, #musicToggleButton {
+            padding: 4px 8px; /* Smaller padding */
+            font-size: 12px; /* Smaller font size */
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #soundToggleButton:hover, #musicToggleButton:hover {
+            background-color: #45a049;
+        }
+
+        /* Pagination Controls Styling */
+        #paginationControls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #paginationControls button {
+            padding: 6px 12px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #paginationControls button:hover {
+            background-color: #45a049;
+        }
+
+        #paginationControls button:disabled {
+            background-color: #a5d6a7;
+            cursor: not-allowed;
+        }
+
+        #paginationControls span {
+            font-size: 14px;
+        }
+
+        /* Right Panel Styling */
+        #rightPanel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Info Panel Styling */
+        #infoPanel {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        #infoPanel div {
+            font-size: 16px;
+            margin: 5px 10px;
+        }
+
+        /* Live Score Styling */
+        #liveScore {
+            font-weight: bold;
+            color: #FF4500;
+            font-size: 18px;
+        }
+
+        /* Start Game and Rules Button Container */
+        #gameButtons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Start Game Button Styling */
+        #startGameButton {
+            font-size: 20px;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #startGameButton:hover {
+            background-color: #45a049;
+        }
+
+        /* Rules Button Styling */
+        #rulesButton {
+            font-size: 14px;
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #rulesButton:hover {
+            background-color: #1976D2;
+        }
+
+        /* Canvas Styling */
+        canvas {
+            background-color: #f0f0f0;
+            width: 800px;
+            height: 800px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        /* Overlay Styling */
+        #buttonOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        #overlayContent {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Name Form Styling */
+        #nameForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #nameForm input {
+            width: 100%;
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-length: 20;
+        }
+
+        /* Ensuring input does not exceed 20 characters */
+        #playerName {
+            max-length: 20;
+        }
+
+        #nameForm button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #nameForm button:hover {
+            background-color: #45a049;
+        }
+
+        /* Overlay Buttons Styling */
+        #overlayButtons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #overlayButtons button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        #overlayButtons button:hover {
+            background-color: #45a049;
+        }
+
+        /* Try Again Button Specific Styling */
+        #tryAgainButton {
+            background-color: #FFC107;
+        }
+
+        #tryAgainButton:hover {
+            background-color: #FFA000;
+        }
+
+        /* Confirmation Dialog Styling */
+        #confirmationDialog {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        #confirmationDialogContent {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        #confirmationDialogContent button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        #confirmationDialogContent button:hover {
+            background-color: #45a049;
+        }
+
+        /* Rules Modal Styling */
+        #rulesModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
             display: none;
             align-items: center;
             justify-content: center;
+            z-index: 1500;
         }
 
-        #nameFormContent {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 300px;
+        #rulesContent {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        #rulesContent h2 {
+            margin-top: 0;
             text-align: center;
         }
 
-        #nameFormContent input {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        #rulesContent p {
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: justify;
         }
 
-        #nameFormContent button {
-            padding: 10px 20px;
+        #closeRulesButton {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: #f44336;
+            color: white;
             border: none;
-            background-color: #28a745;
-            color: #fff;
-            border-radius: 4px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        #nameFormContent button:hover {
-            background-color: #218838;
+        #closeRulesButton:hover {
+            background-color: #d32f2f;
         }
 
-        /* Overlay Buttons */
-        #overlayButtons {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
+        /* Message Styling */
+        #nameFormMessage, #overlayButtonsMessage {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
         }
 
-        #overlayButtons button {
-            padding: 10px 15px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #overlayButtons button:hover {
-            background-color: #0069d9;
+        /* End Level Score Styling */
+        #endLevelScore {
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
         }
 
         /* Responsive Design */
-        @media (max-width: 850px) {
-            #gameContainer {
-                width: 90%;
-                height: 60vh;
+        @media (max-width: 1400px) {
+            #mainContainer {
+                width: 100%;
+                max-width: none;
             }
 
-            #leaderboardContent {
-                width: 90%;
+            #leftPanel {
+                width: 35%;
+                max-width: 500px;
             }
+
+            #leaderboardBanner {
+                max-width: 480px;
+            }
+
+            #infoPanel {
+                max-width: 900px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            #mainContainer {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #leftPanel {
+                width: 80%;
+                max-width: 500px;
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+
+            #rightPanel {
+                width: 100%;
+            }
+
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+
+            #infoPanel {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Adjust Name Column for Dynamic Width and Limit to 20 Characters */
+        #leaderboard th:nth-child(2), #leaderboard td:nth-child(2) {
+            /* Allow the Name column to adjust its width */
+            width: auto;
+            max-width: 200px; /* Optional: set a max-width to prevent it from being too wide */
+        }
+
+        /* Highlight Clicks in Gold When No Misses Occur */
+        .no-miss-clicks {
+            color: gold;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <!-- Game Container -->
-    <div id="gameContainer">
-        <!-- Your game canvas or elements go here -->
-        <!-- Example Placeholder -->
-        <canvas id="gameCanvas" width="800" height="600" style="background-color: #e0e0e0;"></canvas>
-    </div>
-
-    <!-- Name Submission Overlay -->
-    <div id="nameFormOverlay">
-        <div id="nameFormContent">
-            <h2>Submit Your Score</h2>
-            <form id="nameForm">
-                <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20" required>
-                <br>
-                <button type="submit">Submit</button>
-            </form>
-            <p id="nameFormMessage" style="color: red; margin-top: 10px;"></p>
-        </div>
-    </div>
-
-    <!-- Leaderboard Overlay -->
-    <div id="leaderboardOverlay">
-        <div id="leaderboardContent">
-            <h2>Leaderboard - Level <span id="leaderboardLevelDisplay">1</span></h2>
-            <table id="leaderboardTable">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Time (s)</th>
-                        <th>Clicks</th>
-                        <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboardBody">
-                    <!-- Leaderboard entries will be populated here -->
-                </tbody>
-            </table>
-            <div id="paginationControls" style="margin-top: 10px; display: flex; justify-content: space-between;">
+    <div id="mainContainer">
+        <!-- Left Panel: Leaderboard -->
+        <div id="leftPanel">
+            <!-- Leaderboard Banner -->
+            <img id="leaderboardBanner" src="images/PopixBanner.jpg" alt="Leaderboard Banner">
+            <!-- Leaderboard Table -->
+            <div id="leaderboard">
+                <h2>Leaderboard Level <span id="leaderboardLevel">1</span></h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Time</th>
+                            <th>Clicks</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Leaderboard entries will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Control Buttons Container -->
+            <div id="controlsContainer">
+                <!-- Sound Toggle Button -->
+                <button id="soundToggleButton" title="Toggle Game Sounds">Sound On</button>
+                <!-- Reset Scores Button -->
+                <button id="resetScoresButton">Reset Scores</button>
+                <!-- Music Toggle Button -->
+                <button id="musicToggleButton" title="Toggle Music">Music On</button>
+            </div>
+            <!-- Pagination Controls -->
+            <div id="paginationControls">
                 <button id="prevPageButton">Previous</button>
+                <span id="currentPage">1</span> / <span id="totalPages">1</span>
                 <button id="nextPageButton">Next</button>
             </div>
-            <button id="closeLeaderboardButton" style="margin-top: 10px; padding: 8px 16px; background-color: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+        </div>
+
+        <!-- Right Panel: Game Area -->
+        <div id="rightPanel">
+            <!-- Info Panel -->
+            <div id="infoPanel">
+                <div>Score: <span id="liveScore">0</span></div>
+                <div>Clicks: <span id="clickCount">0</span></div>
+                <div>Time: <span id="timeElapsed">0</span>s</div>
+                <div>Combo: x<span id="comboMultiplierDisplay">1.00</span></div>
+                <div>Circles Remaining: <span id="circlesRemaining">0</span></div>
+                <div>Level: <span id="currentLevel">1</span></div>
+            </div>
+
+            <!-- Start Game and Rules Buttons Container -->
+            <div id="gameButtons">
+                <!-- Start Game Button -->
+                <button id="startGameButton">Start Game</button>
+                <!-- Rules Button -->
+                <button id="rulesButton">Rules</button>
+            </div>
+
+            <!-- Game Canvas -->
+            <canvas id="gameCanvas" width="800" height="800"></canvas>
+
+            <!-- Overlay for End of Level: Name Form and Buttons -->
+            <div id="buttonOverlay">
+                <div id="overlayContent">
+                    <!-- Name Form -->
+                    <form id="nameForm">
+                        <input type="text" id="playerName" placeholder="Enter your name" required maxlength="20" />
+                        <button type="submit">Submit Score</button>
+                        <div id="nameFormMessage"></div>
+                    </form>
+                    <!-- Buttons -->
+                    <div id="overlayButtons" style="display: none;">
+                        <!-- End of Level Score Display -->
+                        <div id="endLevelScore"></div>
+                        <button id="nextLevelButton">Play Next Level</button>
+                        <button id="tryAgainButton">Try Again</button>
+                        <button id="resetGameButton">Reset Game</button>
+                        <div id="overlayButtonsMessage"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Overlay Buttons -->
-    <div id="overlayButtons">
-        <button id="viewLeaderboardButton">View Leaderboard</button>
-        <button id="resetGameButton">Reset Game</button>
+    <!-- Confirmation Dialog -->
+    <div id="confirmationDialog">
+        <div id="confirmationDialogContent">
+            <p>Are you sure you want to reset the game?</p>
+            <button id="confirmYesButton">Yes</button>
+            <button id="confirmNoButton">No</button>
+        </div>
     </div>
 
-    <!-- Firebase and Game JavaScript -->
+    <!-- Rules Modal -->
+    <div id="rulesModal">
+        <div id="rulesContent">
+            <button id="closeRulesButton">&times;</button>
+            <h2>Game Rules & Features</h2>
+            <p>
+                Welcome to Popix! Your goal is to click on moving circles to earn points. Each successful click increases your score and combo multiplier.
+                <br><br>
+                **Quick Pops Bonus:** Popping circles quickly increases your combo multiplier more than popping them slowly. The faster you pop, the higher the multiplier increases—up to an additional **0.05** per quick pop. The slowest consecutive pop increases the multiplier by **0.01**.
+                <br><br>
+                **Missed Click Penalty:** A missed click decreases your multiplier by **0.1**, but it won't go below **1**.
+                <br><br>
+                As you progress through levels, circles may subdivide into smaller, faster-moving ones, increasing the challenge.
+                <br><br>
+                **Score Decay:** Your score will decrease by **2% every 2 seconds** during gameplay. Ensure you click as quickly and accurately as possible to maximize your score!
+                <br><br>
+                Keep track of your time and clicks to optimize your performance. Strive to achieve the highest score possible by balancing speed and accuracy. Utilize the leaderboard to compare your achievements with other players. Good luck and enjoy the game!
+            </p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
+
     <script>
-        // Firebase configuration
+        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyCfgJraRkyM_tPqdiqbqioEl9g7H9P8N5Y",
             authDomain: "popix-c0d04.firebaseapp.com",
@@ -232,257 +643,90 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        firebase.analytics();
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        // Get a reference to the database service
-        const database = firebase.database();
+        // Canvas and Game Variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // Game Variables (Initialize as needed)
-        let level = 1;
-        let score = 0;
+        let circles = [];
+        let particles = [];
         let clickCount = 0;
+        let comboMultiplier = 1;
+        let level = 1;
+        let animationId = null;
+        let timerInterval = null;
+        let scoreInterval = null;
+        let startTime = 0;
         let timeElapsed = 0;
-        let missedClick = false;
-        const maxLevel = 5; // Example maximum level
-        let gameInterval; // To track game time
+        let score = 0;
 
         // Leaderboard Variables
-        let leaderboard = [];
-        let currentPage = 1;
         const entriesPerPage = 10;
+        let currentPage = 1;
+        let totalPages = 1;
 
-        // DOM Elements
-        const nameFormOverlay = document.getElementById('nameFormOverlay');
-        const nameForm = document.getElementById('nameForm');
-        const playerNameInput = document.getElementById('playerNameInput');
-        const nameFormMessage = document.getElementById('nameFormMessage');
+        // Firebase Functions
+        function submitScoreFirebase(playerName, level, score, clickCount, timeElapsed) {
+            const newScoreKey = db.ref().child('scores').push().key;
 
-        const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-        const leaderboardLevelDisplay = document.getElementById('leaderboardLevelDisplay');
-        const leaderboardBody = document.getElementById('leaderboardBody');
-        const prevPageButton = document.getElementById('prevPageButton');
-        const nextPageButton = document.getElementById('nextPageButton');
-        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
-
-        const viewLeaderboardButton = document.getElementById('viewLeaderboardButton');
-        const resetGameButton = document.getElementById('resetGameButton');
-
-        const gameCanvas = document.getElementById('gameCanvas');
-        const ctx = gameCanvas.getContext('2d');
-
-        // Event Listeners
-        nameForm.addEventListener('submit', submitScore);
-        viewLeaderboardButton.addEventListener('click', () => {
-            currentPage = 1;
-            loadLeaderboard();
-            leaderboardOverlay.style.display = 'flex';
-        });
-        closeLeaderboardButton.addEventListener('click', () => {
-            leaderboardOverlay.style.display = 'none';
-        });
-        prevPageButton.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayLeaderboard();
-            }
-        });
-        nextPageButton.addEventListener('click', () => {
-            const totalPages = Math.ceil(leaderboard.filter(entry => Number(entry.level) === level).length / entriesPerPage);
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayLeaderboard();
-            }
-        });
-        resetGameButton.addEventListener('click', resetGame);
-
-        // Game Functions (Replace with your actual game logic)
-        function startGame() {
-            console.log('Game Started');
-            // Initialize or reset game variables
-            level = 1;
-            score = 0;
-            clickCount = 0;
-            timeElapsed = 0;
-            missedClick = false;
-
-            // Start game timer
-            gameInterval = setInterval(() => {
-                timeElapsed++;
-                // Update game state, score, etc.
-                // Example: ctx.fillText(`Time: ${timeElapsed}s`, 10, 50);
-            }, 1000);
-
-            // Render initial game state
-            renderGame();
-        }
-
-        function endGame() {
-            console.log('Game Ended');
-            clearInterval(gameInterval);
-            // Show name submission form
-            nameFormOverlay.style.display = 'flex';
-        }
-
-        function resetGame() {
-            console.log('Game Reset');
-            clearInterval(gameInterval);
-            startGame();
-        }
-
-        function renderGame() {
-            // Example game rendering
-            ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-            ctx.fillStyle = '#000';
-            ctx.font = '20px Poppins';
-            ctx.fillText(`Level: ${level}`, 10, 30);
-            ctx.fillText(`Score: ${score}`, 10, 60);
-            ctx.fillText(`Clicks: ${clickCount}`, 10, 90);
-            ctx.fillText(`Time: ${timeElapsed}s`, 10, 120);
-        }
-
-        // Function to standardize player name
-        function standardizeName(name) {
-            return name.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-        }
-
-        // Function to display messages
-        function displayMessage(message, type, elementId) {
-            const element = document.getElementById(elementId);
-            element.textContent = message;
-            element.style.color = type === 'error' ? 'red' : 'green';
-        }
-
-        // Function to submit score to Firebase
-        function submitScore(event) {
-            event.preventDefault();
-            const playerName = playerNameInput.value.trim();
-            if (!playerName) {
-                displayMessage('Please enter your name.', 'error', 'nameFormMessage');
-                return;
-            }
-
-            const standardizedName = standardizeName(playerName);
-            if (standardizedName.length === 0) {
-                displayMessage('Invalid name.', 'error', 'nameFormMessage');
-                return;
-            }
-
-            // Create a new leaderboard entry
-            const newEntry = {
-                name: standardizedName,
+            db.ref('scores/' + newScoreKey).set({
+                name: playerName,
                 level: level,
                 score: score,
                 clicks: clickCount,
                 time: timeElapsed,
-                missedClick: missedClick,
                 timestamp: Date.now()
-            };
-
-            // Push the new entry to Firebase Realtime Database
-            const leaderboardRef = database.ref('leaderboard');
-            leaderboardRef.push(newEntry)
-                .then(() => {
-                    displayMessage('Score submitted successfully!', 'success', 'nameFormMessage');
-                    console.log('Score submitted:', newEntry);
-                    // Optionally, hide the form after submission
-                    setTimeout(() => {
-                        nameFormOverlay.style.display = 'none';
-                        overlayButtons.style.display = 'flex';
-                    }, 2000);
-                })
-                .catch((error) => {
-                    displayMessage('Failed to submit score. Please try again.', 'error', 'nameFormMessage');
-                    console.error('Error submitting score:', error);
-                });
+            }).then(() => {
+                loadLeaderboardFirebase();
+            }).catch(error => {
+                console.error('Error submitting score:', error);
+            });
         }
 
-        // Function to load leaderboard data from Firebase
-        function loadLeaderboard() {
-            const leaderboardRef = database.ref('leaderboard');
-            leaderboardRef.orderByChild('level').equalTo(level).once('value')
-                .then((snapshot) => {
-                    const data = snapshot.val();
-                    leaderboard = [];
-                    for (let key in data) {
-                        leaderboard.push(data[key]);
-                    }
-                    // Sort leaderboard by score descending
-                    leaderboard.sort((a, b) => b.score - a.score);
-                    displayLeaderboard();
-                })
-                .catch((error) => {
-                    console.error('Error loading leaderboard:', error);
+        function loadLeaderboardFirebase() {
+            const leaderboardBody = document.getElementById('leaderboardBody');
+            leaderboardBody.innerHTML = '';
+
+            db.ref('scores').orderByChild('score').limitToLast(10).once('value', snapshot => {
+                const leaderboardEntries = [];
+                snapshot.forEach(childSnapshot => {
+                    leaderboardEntries.push(childSnapshot.val());
                 });
-        }
+                leaderboardEntries.reverse();
 
-        // Function to display leaderboard data
-        function displayLeaderboard() {
-            leaderboardBody.innerHTML = ''; // Clear existing entries
-            const filteredLeaderboard = leaderboard.filter(entry => Number(entry.level) === level);
-            const totalPages = Math.ceil(filteredLeaderboard.length / entriesPerPage);
-            const start = (currentPage - 1) * entriesPerPage;
-            const end = start + entriesPerPage;
-            const entriesToDisplay = filteredLeaderboard.slice(start, end);
+                leaderboardEntries.forEach((entry, index) => {
+                    const row = leaderboardBody.insertRow();
 
-            if (entriesToDisplay.length === 0) {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.colSpan = 5;
-                cell.textContent = 'No entries yet for this level.';
-                row.appendChild(cell);
-                leaderboardBody.appendChild(row);
-            } else {
-                entriesToDisplay.forEach((entry, index) => {
-                    const row = document.createElement('tr');
+                    const rankCell = row.insertCell(0);
+                    const nameCell = row.insertCell(1);
+                    const timeCell = row.insertCell(2);
+                    const clicksCell = row.insertCell(3);
+                    const scoreCell = row.insertCell(4);
 
-                    const rankCell = document.createElement('td');
-                    rankCell.textContent = start + index + 1;
-
-                    const nameCell = document.createElement('td');
+                    rankCell.textContent = index + 1;
                     nameCell.textContent = entry.name;
-
-                    const timeCell = document.createElement('td');
-                    timeCell.textContent = `${entry.time}`;
-
-                    const clicksCell = document.createElement('td');
-                    clicksCell.textContent = `${entry.clicks}`;
-
-                    const scoreCell = document.createElement('td');
-                    scoreCell.textContent = `${entry.score}`;
-
-                    row.appendChild(rankCell);
-                    row.appendChild(nameCell);
-                    row.appendChild(timeCell);
-                    row.appendChild(clicksCell);
-                    row.appendChild(scoreCell);
-
-                    leaderboardBody.appendChild(row);
+                    timeCell.textContent = `${entry.time}s`;
+                    clicksCell.textContent = entry.clicks;
+                    scoreCell.textContent = entry.score;
                 });
-            }
-
-            // Disable/Enable pagination buttons
-            prevPageButton.disabled = currentPage === 1;
-            nextPageButton.disabled = currentPage >= totalPages;
+            }).catch(error => {
+                console.error('Error loading leaderboard:', error);
+            });
         }
 
-        // Function to change leaderboard page
-        function changePage(delta) {
-            const filteredLeaderboard = leaderboard.filter(entry => Number(entry.level) === level);
-            const totalPages = Math.ceil(filteredLeaderboard.length / entriesPerPage);
-            currentPage += delta;
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            displayLeaderboard();
-        }
+        // Event Handlers for Submitting Score
+        document.getElementById('nameForm').addEventListener('submit', event => {
+            event.preventDefault();
+            const playerName = document.getElementById('playerName').value;
+            submitScoreFirebase(playerName, level, score, clickCount, timeElapsed);
+        });
 
-        // Initialize Game
-        startGame();
-
-        // Example: Trigger endGame after 30 seconds for demonstration purposes
-        setTimeout(() => {
-            endGame();
-        }, 30000); // 30,000 milliseconds = 30 seconds
+        // Load the leaderboard on initial load
+        window.addEventListener('load', () => {
+            loadLeaderboardFirebase();
+        });
     </script>
 </body>
 </html>

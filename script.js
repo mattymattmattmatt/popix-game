@@ -1,6 +1,3 @@
-let cheatCode = 'woos';
-let cheatCodePosition = 0;
-
 // Ensure the script runs after the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
@@ -130,6 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // For tracking the time between pops
     let lastPopTime = null;
+
+    // Cheat code variables
+    let cheatCode = 'woos';
+    let cheatCodePosition = 0;
 
     // --- Class Definitions ---
 
@@ -339,6 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
             circle.update();
         });
 
+        // Update circles remaining
+        circlesRemainingDisplay.textContent = circles.length;
+
         // Handle collisions
         handleCollisions();
 
@@ -546,115 +550,139 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-    console.log('Game completed all levels.');
-    buttonOverlay.style.display = 'flex';
-    overlayButtons.style.display = 'none';
-    nameForm.style.display = 'none';
+        console.log('Game completed all levels.');
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'none';
+        nameForm.style.display = 'none';
 
-    // Get the top scores per level
-    const topScores = getTopScoresPerLevel();
+        // Get the top scores per level
+        const topScores = getTopScoresPerLevel();
 
-    // Create a summary of top scores for all levels
-    const summaryDiv = document.createElement('div');
-    summaryDiv.style.width = '100%';
+        // Create a summary of top scores for all levels
+        const summaryDiv = document.createElement('div');
+        summaryDiv.style.width = '100%';
 
-    const summaryTitle = document.createElement('h2');
-    summaryTitle.textContent = 'Top Scores Per Level';
-    summaryTitle.style.textAlign = 'center';
-    summaryDiv.appendChild(summaryTitle);
+        const summaryTitle = document.createElement('h2');
+        summaryTitle.textContent = 'Top Scores Per Level';
+        summaryTitle.style.textAlign = 'center';
+        summaryDiv.appendChild(summaryTitle);
 
-    const summaryMessage = document.createElement('p');
-    summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
-    summaryDiv.appendChild(summaryMessage);
+        const summaryMessage = document.createElement('p');
+        summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
+        summaryDiv.appendChild(summaryMessage);
 
-    const summaryTable = document.createElement('table');
-    summaryTable.style.width = '100%';
-    summaryTable.style.borderCollapse = 'collapse';
-    summaryTable.style.marginBottom = '20px';
+        const summaryTable = document.createElement('table');
+        summaryTable.style.width = '100%';
+        summaryTable.style.borderCollapse = 'collapse';
+        summaryTable.style.marginBottom = '20px';
 
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    ['Level', 'Name', 'Score', 'Clicks', 'Time (s)'].forEach(text => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        th.style.border = '1px solid #ccc';
-        th.style.padding = '6px 8px';
-        th.style.backgroundColor = '#f2f2f2';
-        headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    summaryTable.appendChild(thead);
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Level', 'Name', 'Score', 'Clicks', 'Time (s)'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '6px 8px';
+            th.style.backgroundColor = '#f2f2f2';
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        summaryTable.appendChild(thead);
 
-    const tbody = document.createElement('tbody');
+        const tbody = document.createElement('tbody');
 
-    topScores.forEach(entry => {
-        const row = document.createElement('tr');
+        topScores.forEach(entry => {
+            const row = document.createElement('tr');
 
-        const levelCell = document.createElement('td');
-        levelCell.textContent = entry.level;
-        levelCell.style.border = '1px solid #ccc';
-        levelCell.style.padding = '6px 8px';
-        row.appendChild(levelCell);
+            const levelCell = document.createElement('td');
+            levelCell.textContent = entry.level;
+            levelCell.style.border = '1px solid #ccc';
+            levelCell.style.padding = '6px 8px';
+            row.appendChild(levelCell);
 
-        const nameCell = document.createElement('td');
-        nameCell.textContent = entry.name;
-        nameCell.style.border = '1px solid #ccc';
-        nameCell.style.padding = '6px 8px';
-        row.appendChild(nameCell);
+            const nameCell = document.createElement('td');
+            nameCell.textContent = entry.name;
+            nameCell.style.border = '1px solid #ccc';
+            nameCell.style.padding = '6px 8px';
+            row.appendChild(nameCell);
 
-        const scoreCell = document.createElement('td');
-        scoreCell.textContent = entry.score;
-        scoreCell.style.border = '1px solid #ccc';
-        scoreCell.style.padding = '6px 8px';
-        row.appendChild(scoreCell);
+            const scoreCell = document.createElement('td');
+            scoreCell.textContent = entry.score;
+            scoreCell.style.border = '1px solid #ccc';
+            scoreCell.style.padding = '6px 8px';
+            row.appendChild(scoreCell);
 
-        const clicksCell = document.createElement('td');
-        clicksCell.textContent = entry.clicks;
-        clicksCell.style.border = '1px solid #ccc';
-        clicksCell.style.padding = '6px 8px';
-        row.appendChild(clicksCell);
+            const clicksCell = document.createElement('td');
+            clicksCell.textContent = entry.clicks;
+            clicksCell.style.border = '1px solid #ccc';
+            clicksCell.style.padding = '6px 8px';
+            row.appendChild(clicksCell);
 
-        const timeCell = document.createElement('td');
-        timeCell.textContent = entry.time;
-        timeCell.style.border = '1px solid #ccc';
-        timeCell.style.padding = '6px 8px';
-        row.appendChild(timeCell);
+            const timeCell = document.createElement('td');
+            timeCell.textContent = entry.time;
+            timeCell.style.border = '1px solid #ccc';
+            timeCell.style.padding = '6px 8px';
+            row.appendChild(timeCell);
 
-        tbody.appendChild(row);
-    });
+            tbody.appendChild(row);
+        });
 
-    summaryTable.appendChild(tbody);
-    summaryDiv.appendChild(summaryTable);
+        summaryTable.appendChild(tbody);
+        summaryDiv.appendChild(summaryTable);
 
-    // Reset Game Button
-    const resetButton = document.createElement('button');
-    resetButton.textContent = 'Reset Game';
-    resetButton.id = 'finalResetButton';
-    resetButton.style.padding = '10px 20px';
-    resetButton.style.fontSize = '16px';
-    resetButton.style.backgroundColor = '#4CAF50';
-    resetButton.style.color = 'white';
-    resetButton.style.border = 'none';
-    resetButton.style.borderRadius = '5px';
-    resetButton.style.cursor = 'pointer';
-    resetButton.style.transition = 'background-color 0.3s ease';
-    resetButton.addEventListener('click', resetGame);
-    resetButton.addEventListener('mouseover', () => {
-        resetButton.style.backgroundColor = '#45a049';
-    });
-    resetButton.addEventListener('mouseout', () => {
+        // Reset Game Button
+        const resetButton = document.createElement('button');
+        resetButton.textContent = 'Reset Game';
+        resetButton.id = 'finalResetButton';
+        resetButton.style.padding = '10px 20px';
+        resetButton.style.fontSize = '16px';
         resetButton.style.backgroundColor = '#4CAF50';
-    });
+        resetButton.style.color = 'white';
+        resetButton.style.border = 'none';
+        resetButton.style.borderRadius = '5px';
+        resetButton.style.cursor = 'pointer';
+        resetButton.style.transition = 'background-color 0.3s ease';
+        resetButton.addEventListener('click', resetGame);
+        resetButton.addEventListener('mouseover', () => {
+            resetButton.style.backgroundColor = '#45a049';
+        });
+        resetButton.addEventListener('mouseout', () => {
+            resetButton.style.backgroundColor = '#4CAF50';
+        });
 
-    summaryDiv.appendChild(resetButton);
+        summaryDiv.appendChild(resetButton);
 
-    // Clear existing overlay content and append summary
-    buttonOverlay.querySelector('#overlayContent').innerHTML = '';
-    buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
+        // Clear existing overlay content and append summary
+        buttonOverlay.querySelector('#overlayContent').innerHTML = '';
+        buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
 
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-}
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+    }
+
+    function getTopScoresPerLevel() {
+        const topScores = [];
+        for (let lvl = 1; lvl <= maxLevel; lvl++) {
+            const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
+            if (entriesForLevel.length > 0) {
+                // Sort entries for this level by score descending
+                entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
+                // Get the top entry
+                topScores.push(entriesForLevel[0]);
+            } else {
+                // No entries for this level
+                topScores.push({
+                    level: lvl,
+                    name: 'N/A',
+                    score: 'N/A',
+                    clicks: 'N/A',
+                    time: 'N/A',
+                    missedClick: 'N/A'
+                });
+            }
+        }
+        return topScores;
+    }
 
     // Submit score to Firebase
     function submitScore(event) {
@@ -808,72 +836,72 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLeaderboard();
     }
 
-function resetScores() {
-    const enteredPassword = prompt('Please enter the password to reset the scores:');
-    if (enteredPassword === null) {
-        // User pressed cancel
-        console.log('Reset scores action cancelled by user.');
-        return;
-    }
+    // Reset Scores Function with Password Protection
+    function resetScores() {
+        const enteredPassword = prompt('Please enter the password to reset the scores:');
+        if (enteredPassword === null) {
+            // User pressed cancel
+            console.log('Reset scores action cancelled by user.');
+            return;
+        }
 
-    if (enteredPassword === 'ban00bles') {
-        // Password is correct
-        console.log('Password correct. Resetting scores.');
-        // Proceed to reset the scores in Firebase
-        database.ref('leaderboard').remove()
-            .then(() => {
-                alert('All scores have been reset.');
-                console.log('All scores have been reset in the database.');
-                // Reload the leaderboard to reflect changes
-                loadLeaderboard(updateLeaderboard);
-            })
-            .catch((error) => {
-                alert('Error resetting scores.');
-                console.error('Error resetting scores:', error);
-            });
-    } else {
-        // Password is incorrect
-        alert('Incorrect password. Scores have not been reset.');
-        console.warn('Incorrect password entered for resetting scores.');
+        if (enteredPassword === 'ban00bles') {
+            // Password is correct
+            console.log('Password correct. Resetting scores.');
+            // Proceed to reset the scores in Firebase
+            database.ref('leaderboard').remove()
+                .then(() => {
+                    alert('All scores have been reset.');
+                    console.log('All scores have been reset in the database.');
+                    // Reload the leaderboard to reflect changes
+                    loadLeaderboard(updateLeaderboard);
+                })
+                .catch((error) => {
+                    alert('Error resetting scores.');
+                    console.error('Error resetting scores:', error);
+                });
+        } else {
+            // Password is incorrect
+            alert('Incorrect password. Scores have not been reset.');
+            console.warn('Incorrect password entered for resetting scores.');
+        }
     }
-}
-
 
     function resetGame() {
-    console.log('Resetting the game.');
-    confirmationDialog.style.display = 'none';
-    level = 1;
-    currentLevelDisplay.textContent = level;
-    leaderboardLevelDisplay.textContent = level;
-    circles = [];
-    particles = [];
-    clickCount = 0;
-    comboMultiplier = 1;
-    score = 0;
-    missedClick = false;
-    currentPage = 1;
-    gameStarted = false; // Reset gameStarted flag
-    cheatCodePosition = 0; // Reset cheat code position
-    buttonOverlay.style.display = 'none';
-    levelMusic.pause();
-    levelMusic.currentTime = 0;
-    loadLeaderboard(updateLeaderboard);
+        console.log('Resetting the game.');
+        confirmationDialog.style.display = 'none';
+        level = 1;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        circles = [];
+        particles = [];
+        clickCount = 0;
+        comboMultiplier = 1;
+        score = 0;
+        missedClick = false;
+        currentPage = 1;
+        gameStarted = false; // Reset gameStarted flag
+        cheatCodePosition = 0; // Reset cheat code position
+        buttonOverlay.style.display = 'none';
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+        loadLeaderboard(updateLeaderboard);
 
-    // Reset the overlay content
-    const overlayContent = buttonOverlay.querySelector('#overlayContent');
-    overlayContent.innerHTML = '';
-    overlayContent.appendChild(nameForm);
-    overlayContent.appendChild(overlayButtons);
-    nameForm.style.display = 'none';
-    overlayButtons.style.display = 'none';
+        // Reset the overlay content
+        const overlayContent = buttonOverlay.querySelector('#overlayContent');
+        overlayContent.innerHTML = '';
+        overlayContent.appendChild(nameForm);
+        overlayContent.appendChild(overlayButtons);
+        nameForm.style.display = 'none';
+        overlayButtons.style.display = 'none';
 
-    // Show the start and rules buttons
-    startGameButton.style.display = 'block';
-    rulesButton.style.display = 'block';
+        // Show the start and rules buttons
+        startGameButton.style.display = 'block';
+        rulesButton.style.display = 'block';
 
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-}
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+    }
 
     function showConfirmationDialog() {
         console.log('Showing confirmation dialog.');
@@ -902,6 +930,69 @@ function resetScores() {
                 messageDiv.style.color = '#333';
             }
         }
+    }
+
+    function startNextLevel() {
+        console.log(`Starting next level from Level ${level}.`);
+        level++;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        currentPage = 1;
+        startGame();
+    }
+
+    function tryAgain() {
+        console.log(`Trying again on Level ${level}.`);
+        // Restart the current level
+        startGame();
+    }
+
+    // Cheat code handling
+    function handleKeyPress(event) {
+        if (level === 1 && gameStarted) {
+            const key = event.key.toLowerCase();
+            if (key === cheatCode[cheatCodePosition]) {
+                cheatCodePosition++;
+                if (cheatCodePosition === cheatCode.length) {
+                    // Cheat code entered successfully
+                    console.log('Cheat code entered: Level skip activated.');
+                    cheatCodePosition = 0;
+                    skipToLevel9End();
+                }
+            } else {
+                cheatCodePosition = 0; // Reset if the sequence breaks
+            }
+        }
+    }
+
+    function skipToLevel9End() {
+        // Stop the current level
+        cancelAnimationFrame(animationId);
+        clearInterval(timerInterval);
+        clearInterval(scoreInterval);
+
+        level = 9;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+        timeElapsedDisplay.textContent = timeElapsed;
+
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        // Simulate end of level
+        console.log(`Level ${level} skipped to end via cheat code.`);
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'flex';
+        nameForm.style.display = 'none'; // Hide name form
+        endLevelScoreDiv.innerHTML = `
+            <p>Your Score: <strong>${score}</strong></p>
+            <p>Clicks: <strong>${clickCount}</strong></p>
+            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+        `;
     }
 
     // --- Event Listener Assignments ---
@@ -991,105 +1082,18 @@ function resetScores() {
         }
     });
 
+    // Keydown event listener for cheat code
+    document.addEventListener('keydown', handleKeyPress);
+
     // Show the start and rules buttons initially
     startGameButton.style.display = 'block';
     rulesButton.style.display = 'block';
 
     // Load leaderboard on initial page load
-    loadLeaderboard(updateLeaderboard);
+    window.addEventListener('load', () => {
+        console.log('Page loaded. Initializing game.');
+        loadLeaderboard(updateLeaderboard);
+        drawInitialScreen();
+    });
 
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-
-    // --- Additional Functions ---
-
-    function startNextLevel() {
-        console.log(`Starting next level from Level ${level}.`);
-        level++;
-        currentLevelDisplay.textContent = level;
-        leaderboardLevelDisplay.textContent = level;
-        currentPage = 1;
-        startGame();
-    }
-
-    function tryAgain() {
-        console.log(`Trying again on Level ${level}.`);
-        // Restart the current level
-        startGame();
-    }
-
-    function getTopScoresPerLevel() {
-    const topScores = [];
-    for (let lvl = 1; lvl <= maxLevel; lvl++) {
-        const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
-        if (entriesForLevel.length > 0) {
-            // Sort entries for this level by score descending
-            entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
-            // Get the top entry
-            topScores.push(entriesForLevel[0]);
-        } else {
-            // No entries for this level
-            topScores.push({
-                level: lvl,
-                name: 'N/A',
-                score: 'N/A',
-                clicks: 'N/A',
-                time: 'N/A',
-                missedClick: 'N/A'
-            });
-        }
-    }
-    return topScores;
-}
-    function handleKeyPress(event) {
-    if (level === 1 && gameStarted) {
-        const key = event.key.toLowerCase();
-        if (key === cheatCode[cheatCodePosition]) {
-            cheatCodePosition++;
-            if (cheatCodePosition === cheatCode.length) {
-                // Cheat code entered successfully
-                console.log('Cheat code entered: Level skip activated.');
-                cheatCodePosition = 0;
-                skipToLevel9End();
-            }
-        } else {
-            cheatCodePosition = 0; // Reset if the sequence breaks
-        }
-    }
-}
-function skipToLevel9End() {
-    // Stop the current level
-    cancelAnimationFrame(animationId);
-    clearInterval(timerInterval);
-    clearInterval(scoreInterval);
-
-    level = 9;
-    currentLevelDisplay.textContent = level;
-    leaderboardLevelDisplay.textContent = level;
-    timeElapsed = Math.floor((performance.now() - startTime) / 1000);
-    timeElapsedDisplay.textContent = timeElapsed;
-
-    levelMusic.pause();
-    levelMusic.currentTime = 0;
-
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-
-    // Simulate end of level
-    console.log(`Level ${level} skipped to end via cheat code.`);
-    buttonOverlay.style.display = 'flex';
-    overlayButtons.style.display = 'flex';
-    nameForm.style.display = 'none'; // Hide name form
-    endLevelScoreDiv.innerHTML = `
-        <p>Your Score: <strong>${score}</strong></p>
-        <p>Clicks: <strong>${clickCount}</strong></p>
-        <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
-    `;
-}
-function resetGame() {
-    // ... existing code ...
-    cheatCodePosition = 0; // Reset cheat code position
-}
-document.addEventListener('keydown', handleKeyPress);
-
-});
+})();

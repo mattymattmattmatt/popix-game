@@ -1,0 +1,477 @@
+/* General Reset and Styling */
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#mainContainer {
+    display: flex;
+    width: 95%;
+    max-width: 1400px;
+    height: 95vh;
+    position: relative;
+}
+
+/* Left Panel Styling */
+#leftPanel {
+    width: 35%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 20px;
+}
+
+#leaderboardBanner {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin-bottom: 20px;
+    object-fit: contain;
+}
+
+#leaderboard {
+    width: 100%;
+    overflow-y: auto;
+    max-height: 70%;
+}
+
+#leaderboard h2 {
+    text-transform: uppercase;
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    text-align: center;
+}
+
+/* Table Styling */
+#leaderboard table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+#leaderboard th, #leaderboard td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#leaderboard th {
+    background-color: #f2f2f2;
+}
+
+/* Controls Container Styling */
+#controlsContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+/* Reset Scores Button Styling */
+#resetScoresButton {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#resetScoresButton:hover {
+    background-color: #d32f2f;
+}
+
+/* Sound and Music Toggle Buttons Styling */
+#soundToggleButton, #musicToggleButton {
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#soundToggleButton:hover, #musicToggleButton:hover {
+    background-color: #45a049;
+}
+
+/* Pagination Controls Styling */
+#paginationControls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#paginationControls button {
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#paginationControls button:hover {
+    background-color: #45a049;
+}
+
+#paginationControls button:disabled {
+    background-color: #a5d6a7;
+    cursor: not-allowed;
+}
+
+#paginationControls span {
+    font-size: 14px;
+}
+
+/* Right Panel Styling */
+#rightPanel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Info Panel Styling */
+#infoPanel {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+#infoPanel div {
+    font-size: 16px;
+    margin: 5px 10px;
+}
+
+/* Live Score Styling */
+#liveScore {
+    font-weight: bold;
+    color: #FF4500;
+    font-size: 18px;
+}
+
+/* Start Game and Rules Button Container */
+#gameButtons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Start Game Button Styling */
+#startGameButton {
+    font-size: 20px;
+    padding: 12px 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#startGameButton:hover {
+    background-color: #45a049;
+}
+
+/* Rules Button Styling */
+#rulesButton {
+    font-size: 14px;
+    padding: 8px 16px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#rulesButton:hover {
+    background-color: #1976D2;
+}
+
+/* Canvas Styling */
+canvas {
+    background-color: #f0f0f0;
+    width: 800px;
+    height: 800px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Overlay Styling */
+#buttonOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+#overlayContent {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+/* Name Form Styling */
+#nameForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#nameForm input {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Overlay Buttons Styling */
+#overlayButtons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#overlayButtons button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#overlayButtons button:hover {
+    background-color: #45a049;
+}
+
+/* Try Again Button Specific Styling */
+#tryAgainButton {
+    background-color: #FFC107;
+}
+
+#tryAgainButton:hover {
+    background-color: #FFA000;
+}
+
+/* Confirmation Dialog Styling */
+#confirmationDialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#confirmationDialogContent {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+#confirmationDialogContent button {
+    font-size: 16px;
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+#confirmationDialogContent button:hover {
+    background-color: #45a049;
+}
+
+/* Rules Modal Styling */
+#rulesModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+}
+
+#rulesContent {
+    background-color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+#rulesContent h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+#rulesContent p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+#closeRulesButton {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#closeRulesButton:hover {
+    background-color: #d32f2f;
+}
+
+/* Message Styling */
+#nameFormMessage, #overlayButtonsMessage {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+}
+
+/* End Level Score Styling */
+#endLevelScore {
+    margin-bottom: 15px;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    #mainContainer {
+        width: 100%;
+        max-width: none;
+    }
+
+    #leftPanel {
+        width: 35%;
+        max-width: 500px;
+    }
+
+    #leaderboardBanner {
+        max-width: 480px;
+    }
+
+    #infoPanel {
+        max-width: 900px;
+    }
+}
+
+@media (max-width: 900px) {
+    #mainContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #leftPanel {
+        width: 80%;
+        max-width: 500px;
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    #rightPanel {
+        width: 100%;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+    }
+
+    #infoPanel {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Adjust Name Column for Dynamic Width and Limit to 20 Characters */
+#leaderboard th:nth-child(2), #leaderboard td:nth-child(2) {
+    width: auto;
+    max-width: 200px;
+}
+
+/* Highlight Clicks in Gold When No Misses Occur */
+.no-miss-clicks {
+    color: gold;
+    font-weight: bold;
+}

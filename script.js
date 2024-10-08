@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cheat code variables
     let cheatCode = 'woos';
     let cheatCodePosition = 0;
-
+    
     // --- Class Definitions ---
 
     class Particle {

@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetScoresButton = document.getElementById('resetScoresButton');
     const nameForm = document.getElementById('nameForm');
     const playerNameInput = document.getElementById('playerName');
-    const leaderboardTable = document.getElementById('leaderboardTable'); // Ensure this exists in your HTML
+    const leaderboardTable = document.getElementById('leaderboardTable');
     const leaderboardBody = document.getElementById('leaderboardBody');
     const leaderboardLevelDisplay = document.getElementById('leaderboardLevel');
     const clickCountDisplay = document.getElementById('clickCount');
@@ -151,20 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            ctx.fillStyle = '#0095DD';
+            ctx.fillStyle = '#FF6F61';
             ctx.fill();
             ctx.closePath();
         }
 
-        move() {
+        update() {
             if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
                 this.dx = -this.dx;
             }
             if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
                 this.dy = -this.dy;
             }
+
             this.x += this.dx;
             this.y += this.dy;
+            this.draw();
         }
 
         isClicked(mouseX, mouseY) {
@@ -172,229 +174,70 @@ document.addEventListener('DOMContentLoaded', () => {
             return distance <= this.radius;
         }
 
-        subdivide(circles, speedFactor, minDiameter) {
-            if (this.radius * 2 * speedFactor >= minDiameter) {
-                circles.push(new Circle(this.x, this.y, this.dx * speedFactor, this.dy * speedFactor, this.radius * speedFactor));
-                circles.push(new Circle(this.x, this.y, -this.dx * speedFactor, -this.dy * speedFactor, this.radius * speedFactor));
+        subdivide(circlesArray, speedFactor, minDiameter) {
+            const newRadius = this.radius / 2;
+            if (newRadius < minDiameter) return;
+
+            for (let i = 0; i < 2; i++) {
+                const offset = newRadius * 1.5;
+                const newX = this.x + (Math.random() - 0.5) * offset;
+                const newY = this.y + (Math.random() - 0.5) * offset;
+                const newDx = (Math.random() - 0.5) * 4 * speedFactor;
+                const newDy = (Math.random() - 0.5) * 4 * speedFactor;
+                circlesArray.push(new Circle(newX, newY, newDx, newDy, newRadius));
             }
         }
     }
 
     class Particle {
-        constructor(x, y) {
+        constructor(x, y, dx, dy, radius, color) {
             this.x = x;
             this.y = y;
-            this.size = Math.random() * 3 + 1;
-            this.speedX = (Math.random() - 0.5) * 2;
-            this.speedY = (Math.random() - 0.5) * 2;
-            this.color = 'rgba(255, 165, 0, 0.8)';
-            this.life = 60; // Frames
+            this.dx = dx;
+            this.dy = dy;
+            this.radius = radius;
+            this.color = color;
+            this.alpha = 1;
+            this.decay = 0.02;
         }
 
         draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.closePath();
+            ctx.restore();
         }
 
         update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            this.life--;
+            this.x += this.dx;
+            this.y += this.dy;
+            this.alpha -= this.decay;
+            this.draw();
         }
     }
 
     // --- Function Definitions ---
 
-    function startGame() {
-        console.log(`Starting game at Level ${level}.`);
-        gameStarted = true;
-        circles = [];
-        particles = [];
-        clickCount = 0;
-        missedClicks = 0; // Reset missed clicks
-        comboMultiplier = 1;
-        score = 0;
-        startTime = performance.now();
-        timeElapsed = 0;
-        lastPopTime = null; // Reset last pop time
-        updateUI();
-        loadLeaderboard(updateLeaderboard);
-
-        buttonOverlay.style.display = 'none';
-        overlayButtons.style.display = 'none';
-        nameForm.style.display = 'none'; // Hide name form after initial entry
-        nameFormMessage.textContent = ''; // Clear previous messages
-
-        // Hide Start Game and Rules buttons once the game has begun
-        startGameButton.style.display = 'none';
-        rulesButton.style.display = 'none';
-
-        // Clear the canvas and hide the title image
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        setLevelMusic(); // Define and call this function
-
-        // Create initial circles
-        for (let i = 0; i < level; i++) {
-            const x = Math.random() * (canvas.width - startingDiameter - 2 * minDiameter) + startingDiameter / 2 + minDiameter;
-            const y = Math.random() * (canvas.height - startingDiameter - 2 * minDiameter) + startingDiameter / 2 + minDiameter;
-            const dx = (Math.random() - 0.5) * 4;
-            const dy = (Math.random() - 0.5) * 4;
-            circles.push(new Circle(x, y, dx, dy, startingDiameter));
-        }
-
-        console.log(`Created ${circles.length} circle(s).`);
-        circlesRemainingDisplay.textContent = circles.length;
-
-        timerInterval = setInterval(() => {
-            updateTime();
-        }, 1000); // Update time every second
-
-        // Start score decrement interval
-        scoreInterval = setInterval(() => {
-            decrementScore();
-        }, 2000); // Every 2 seconds
-
-        animate();
-    }
-
-    function setLevelMusic() {
-        // Pause any existing level music
-        if (!levelMusic.paused) {
-            levelMusic.pause();
-            levelMusic.currentTime = 0;
-        }
-        
-        // Set the source based on the current level
-        levelMusic.src = `sounds/level${level}.mp3`; // Ensure these files exist
-        
-        // Play the level music if music is enabled
-        if (musicEnabled) {
-            levelMusic.play().then(() => {
-                console.log(`Playing music for Level ${level}.`);
-            }).catch(error => {
-                console.error('Error playing level music:', error);
-                // Optionally, set a default music track
-                levelMusic.src = 'sounds/default.mp3';
-                levelMusic.play().catch(err => {
-                    console.error('Error playing default music:', err);
-                });
-            });
-        }
-    }
-
-    function updateUI() {
-        clickCountDisplay.textContent = clickCount;
-        currentLevelDisplay.textContent = level;
-        circlesRemainingDisplay.textContent = circles.length;
-        comboMultiplierDisplay.textContent = comboMultiplier.toFixed(2);
-        liveScoreDisplay.textContent = score;
-    }
-
-    function handleCanvasClick(event) {
-        if (!gameStarted) {
-            console.log('Game not started yet. Click ignored.');
-            return; // Prevent clicks when game isn't started
-        }
-        clickCount++;
-        updateUI();
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-        let hit = false;
-
-        for (let i = circles.length - 1; i >= 0; i--) {
-            const circle = circles[i];
-            if (circle.isClicked(mouseX, mouseY)) {
-                hit = true;
-                if (soundsEnabled) {
-                    clickSound.play().catch(error => {
-                        console.error('Error playing click sound:', error);
-                    });
-                }
-
-                createParticleEffect(circle.x, circle.y);
-
-                // Calculate time difference between pops
-                const currentTime = performance.now();
-                let timeDiff = lastPopTime ? (currentTime - lastPopTime) / 1000 : 0;
-                lastPopTime = currentTime;
-
-                // Determine multiplier increase based on time difference
-                let multiplierIncrease;
-                if (timeDiff <= 0.5) {
-                    multiplierIncrease = 0.05;
-                } else if (timeDiff >= 2) {
-                    multiplierIncrease = 0.01;
-                } else {
-                    // Linear interpolation between 0.05 and 0.01
-                    multiplierIncrease = 0.05 - ((timeDiff - 0.5) / (1.5)) * (0.04);
-                }
-
-                comboMultiplier += multiplierIncrease;
-
-                updateUI();
-
-                if (circle.radius === minDiameter / 2) {
-                    circles.splice(i, 1);
-                } else {
-                    circle.subdivide(circles, speedIncreaseFactor, minDiameter);
-                    circles.splice(i, 1);
-                }
-
-                // Update score
-                score += 100 * comboMultiplier;
-                score = Math.floor(score); // Remove decimal points
-                liveScoreDisplay.textContent = score;
-
-                break;
-            }
-        }
-
-        if (!hit) {
-            if (soundsEnabled) {
-                missSound.play().catch(error => {
-                    console.error('Error playing miss sound:', error);
-                });
-            }
-            comboMultiplier = Math.max(1, comboMultiplier - 0.1);
-            missedClicks++; // Increment missed clicks
-            updateUI();
-        }
-
-        // Check for game over condition (all circles cleared)
-        if (circles.length === 0) {
-            endLevel();
-        }
-    }
-
-    function createParticleEffect(x, y) {
-        for (let i = 0; i < 10; i++) {
-            particles.push(new Particle(x, y));
-        }
-    }
-
     function animate() {
         animationId = requestAnimationFrame(animate);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        circles.forEach(circle => {
-            circle.draw();
-            circle.move();
-        });
-
+        circles.forEach(circle => circle.update());
         particles.forEach((particle, index) => {
-            particle.draw();
-            particle.update();
-
-            // Remove particles that have "died"
-            if (particle.life <= 0) {
+            if (particle.alpha <= 0) {
                 particles.splice(index, 1);
+            } else {
+                particle.update();
             }
         });
+
+        // Check if all circles are cleared
+        if (circles.length === 0) {
+            endLevel();
+        }
     }
 
     function updateTime() {
@@ -404,8 +247,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function decrementScore() {
         if (score > 0) {
-            score -= 10; // Decrement by 10 points every interval
+            score -= Math.floor(10 * comboMultiplier);
+            score = Math.max(0, score); // Prevent negative score
             liveScoreDisplay.textContent = score;
+        }
+    }
+
+    function createParticleEffect(x, y) {
+        for (let i = 0; i < 10; i++) {
+            const dx = (Math.random() - 0.5) * 2;
+            const dy = (Math.random() - 0.5) * 2;
+            const radius = Math.random() * 3 + 1;
+            const color = `rgba(255, 111, 97, ${Math.random()})`;
+            particles.push(new Particle(x, y, dx, dy, radius, color));
         }
     }
 
@@ -434,11 +288,75 @@ document.addEventListener('DOMContentLoaded', () => {
         // Display End of Level Score
         endLevelScoreDiv.innerHTML = `
             <p>Your Score: <strong>${score}</strong></p>
-            <p>Clicks/Missed: <strong>${clickCount}/${missedClicks}</strong></p>
+            <p>Clicks/Missed: <strong>${clickCount}</strong>/<strong style="color:red;">${missedClicks}</strong></p>
             <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
         `;
     }
 
+    function setLevelMusic() {
+        // Define music tracks per level if needed
+        // For simplicity, using the same levelMusic for all levels
+        levelMusic.src = 'sounds/level.mp3'; // Ensure this file exists
+        if (musicEnabled) {
+            levelMusic.play().catch(error => {
+                console.error('Error playing level music:', error);
+            });
+        }
+    }
+
+    function drawInitialScreen() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(popixTitleImage, (canvas.width - popixTitleImage.width) / 2, (canvas.height - popixTitleImage.height) / 2);
+    }
+
+    function resetGame() {
+        console.log('Resetting the game.');
+        confirmationDialog.style.display = 'none';
+        level = 1;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        circles = [];
+        particles = [];
+        clickCount = 0;
+        missedClicks = 0;
+        comboMultiplier = 1;
+        score = 0;
+        timeElapsed = 0;
+        currentPage = 1;
+        gameStarted = false; // Reset gameStarted flag
+        cheatCodePosition = 0; // Reset cheat code position
+        buttonOverlay.style.display = 'none';
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+
+        // Stop final music if playing
+        finalMusic.pause();
+        finalMusic.currentTime = 0;
+
+        loadLeaderboard(updateLeaderboard);
+
+        // Reset the overlay content
+        const overlayContent = buttonOverlay.querySelector('#overlayContent');
+        overlayContent.innerHTML = '';
+        overlayContent.appendChild(nameForm);
+        overlayContent.appendChild(overlayButtons);
+        nameForm.style.display = 'none';
+        overlayButtons.style.display = 'none';
+
+        // Show the start and rules buttons
+        startGameButton.style.display = 'block';
+        rulesButton.style.display = 'block';
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+    }
+
+    function showConfirmationDialog() {
+        console.log('Showing confirmation dialog.');
+        confirmationDialog.style.display = 'flex';
+    }
+
+    // Submit score to Firebase
     function submitScore(event) {
         event.preventDefault();
         const playerNameInputValue = playerNameInput.value.trim();
@@ -493,6 +411,29 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch((error) => {
                 displayMessage('Error submitting score.', 'error', 'overlayButtonsMessage');
                 console.error('Error submitting score:', error);
+            });
+    }
+
+    // Load leaderboard from Firebase
+    function loadLeaderboard(callback) {
+        console.log('Loading leaderboard data from Firebase.');
+        const leaderboardRef = database.ref('leaderboard');
+
+        leaderboardRef.once('value')
+            .then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // Convert the data from an object to an array
+                    leaderboard = Object.values(data);
+                    console.log('Leaderboard data loaded:', leaderboard);
+                } else {
+                    leaderboard = [];
+                    console.log('No leaderboard data available.');
+                }
+                if (callback) callback();
+            })
+            .catch((error) => {
+                console.error('Error loading leaderboard:', error);
             });
     }
 
@@ -577,22 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const scoreCell = document.createElement('td');
                 scoreCell.textContent = entry.score;
-
-                // Style cells
-                rankCell.style.border = '1px solid #ccc';
-                rankCell.style.padding = '6px 8px';
-
-                nameCell.style.border = '1px solid #ccc';
-                nameCell.style.padding = '6px 8px';
-
-                timeCell.style.border = '1px solid #ccc';
-                timeCell.style.padding = '6px 8px';
-
-                clicksCell.style.border = '1px solid #ccc';
-                clicksCell.style.padding = '6px 8px';
-
-                scoreCell.style.border = '1px solid #ccc';
-                scoreCell.style.padding = '6px 8px';
 
                 row.appendChild(rankCell);
                 row.appendChild(nameCell);
@@ -769,354 +694,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadLeaderboard(callback) {
-        console.log('Loading leaderboard data from Firebase.');
-        const leaderboardRef = database.ref('leaderboard');
-
-        leaderboardRef.once('value')
-            .then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    // Convert the data from an object to an array
-                    leaderboard = Object.values(data);
-                    console.log('Leaderboard data loaded:', leaderboard);
-                } else {
-                    leaderboard = [];
-                    console.log('No leaderboard data available.');
-                }
-                if (callback) callback();
-            })
-            .catch((error) => {
-                console.error('Error loading leaderboard:', error);
-            });
+    function standardizeName(name) {
+        const trimmedName = name.trim();
+        if (trimmedName.length === 0) return '';
+        return trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1).toLowerCase();
     }
 
-    function getTopScoresPerLevel() {
-        const topScores = [];
-        for (let lvl = 1; lvl <= maxLevel; lvl++) {
-            const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
-            if (entriesForLevel.length > 0) {
-                // Sort entries for this level by score descending
-                entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
-                // Get the top entry
-                topScores.push(entriesForLevel[0]);
+    function displayMessage(message, type, targetId) {
+        const messageDiv = document.getElementById(targetId);
+        if (messageDiv) {
+            messageDiv.textContent = message;
+            if (type === 'success') {
+                messageDiv.style.color = 'green';
+            } else if (type === 'error') {
+                messageDiv.style.color = 'red';
+            } else if (type === 'info') {
+                messageDiv.style.color = 'blue';
             } else {
-                // No entries for this level
-                topScores.push({
-                    level: lvl,
-                    name: 'N/A',
-                    score: 'N/A',
-                    clicks: 'N/A',
-                    missedClicks: 'N/A',
-                    time: 'N/A'
-                });
+                messageDiv.style.color = '#333';
             }
         }
-        return topScores;
-    }
-
-
-    function endGame() {
-        console.log('Game completed all levels.');
-        buttonOverlay.style.display = 'flex';
-        overlayButtons.style.display = 'none';
-        nameForm.style.display = 'none';
-
-        // Get the top scores per level
-        const topScores = getTopScoresPerLevel();
-
-        // Create a summary of top scores for all levels
-        const summaryDiv = document.createElement('div');
-        summaryDiv.style.width = '100%';
-
-        const summaryTitle = document.createElement('h2');
-        summaryTitle.textContent = 'Top Scores Per Level';
-        summaryTitle.style.textAlign = 'center';
-        summaryDiv.appendChild(summaryTitle);
-
-        const summaryMessage = document.createElement('p');
-        summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
-        summaryDiv.appendChild(summaryMessage);
-
-        const summaryTable = document.createElement('table');
-        summaryTable.style.width = '100%';
-        summaryTable.style.borderCollapse = 'collapse';
-        summaryTable.style.marginBottom = '20px';
-
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Level', 'Name', 'Score', 'Clicks/Missed', 'Time (s)'].forEach(text => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            th.style.border = '1px solid #ccc';
-            th.style.padding = '6px 8px';
-            th.style.backgroundColor = '#f2f2f2';
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        summaryTable.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-
-        topScores.forEach(entry => {
-            const row = document.createElement('tr');
-
-            const levelCell = document.createElement('td');
-            levelCell.textContent = entry.level;
-            levelCell.style.border = '1px solid #ccc';
-            levelCell.style.padding = '6px 8px';
-            row.appendChild(levelCell);
-
-            const nameCell = document.createElement('td');
-            nameCell.textContent = entry.name;
-            nameCell.style.border = '1px solid #ccc';
-            nameCell.style.padding = '6px 8px';
-            row.appendChild(nameCell);
-
-            const scoreCell = document.createElement('td');
-            scoreCell.textContent = entry.score;
-            scoreCell.style.border = '1px solid #ccc';
-            scoreCell.style.padding = '6px 8px';
-            row.appendChild(scoreCell);
-
-            const clicksCell = document.createElement('td');
-            // Format clicks and missed clicks
-            const clicksText = document.createElement('span');
-            clicksText.textContent = entry.clicks;
-
-            const slashText = document.createElement('span');
-            slashText.textContent = '/';
-
-            const missedClicksText = document.createElement('span');
-            missedClicksText.textContent = entry.missedClicks || 0; // Default to 0 if undefined
-            missedClicksText.style.color = 'red';
-
-            clicksCell.appendChild(clicksText);
-            clicksCell.appendChild(slashText);
-            clicksCell.appendChild(missedClicksText);
-
-            clicksCell.style.border = '1px solid #ccc';
-            clicksCell.style.padding = '6px 8px';
-            row.appendChild(clicksCell);
-
-            const timeCell = document.createElement('td');
-            timeCell.textContent = entry.time;
-            timeCell.style.border = '1px solid #ccc';
-            timeCell.style.padding = '6px 8px';
-            row.appendChild(timeCell);
-
-            tbody.appendChild(row);
-        });
-
-        summaryTable.appendChild(tbody);
-        summaryDiv.appendChild(summaryTable);
-
-        // Reset Game Button
-        const resetButton = document.createElement('button');
-        resetButton.textContent = 'Reset Game';
-        resetButton.id = 'finalResetButton';
-        resetButton.style.padding = '10px 20px';
-        resetButton.style.fontSize = '16px';
-        resetButton.style.backgroundColor = '#4CAF50';
-        resetButton.style.color = 'white';
-        resetButton.style.border = 'none';
-        resetButton.style.borderRadius = '5px';
-        resetButton.style.cursor = 'pointer';
-        resetButton.style.transition = 'background-color 0.3s ease';
-        resetButton.addEventListener('click', resetGame);
-        resetButton.addEventListener('mouseover', () => {
-            resetButton.style.backgroundColor = '#45a049';
-        });
-        resetButton.addEventListener('mouseout', () => {
-            resetButton.style.backgroundColor = '#4CAF50';
-        });
-
-        summaryDiv.appendChild(resetButton);
-
-        // Clear existing overlay content and append summary
-        buttonOverlay.querySelector('#overlayContent').innerHTML = '';
-        buttonOverlay.querySelector('#overlayContent').appendChild(summaryDiv);
-
-        // Draw the initial screen with the title image
-        drawInitialScreen();
-
-        // Play final music
-        if (musicEnabled) {
-            finalMusic.play().then(() => {
-                console.log('Playing final scoreboard music.');
-            }).catch(error => {
-                console.error('Error playing final music:', error);
-            });
-        }
-    }
-    
-    function getTopScoresPerLevel() {
-        const topScores = [];
-        for (let lvl = 1; lvl <= maxLevel; lvl++) {
-            const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
-            if (entriesForLevel.length > 0) {
-                // Sort entries for this level by score descending
-                entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
-                // Get the top entry
-                topScores.push(entriesForLevel[0]);
-            } else {
-                // No entries for this level
-                topScores.push({
-                    level: lvl,
-                    name: 'N/A',
-                    score: 'N/A',
-                    clicks: 'N/A',
-                    time: 'N/A',
-                    missedClick: 'N/A'
-                });
-            }
-        }
-        return topScores;
-    }
-
-    // Submit score to Firebase
-    function submitScore(event) {
-        event.preventDefault();
-        const playerNameInputValue = playerNameInput.value.trim();
-        if (!playerNameInputValue) {
-            displayMessage('Please enter your name before submitting your score.', 'error', 'nameFormMessage');
-            console.warn('Score submission failed: Player name is empty.');
-            return;
-        }
-
-        // Standardize and limit the player name
-        let playerName = standardizeName(playerNameInputValue);
-        if (playerName.length > 20) {
-            playerName = playerName.substring(0, 20);
-        }
-        console.log(`Player name entered: ${playerName}`);
-
-        // Create the new leaderboard entry
-        const newEntry = {
-            name: playerName,
-            level: level,
-            score: score,
-            clicks: clickCount,
-            time: timeElapsed,
-            missedClick: missedClick
-        };
-
-        // Write the new score to Firebase
-        const leaderboardRef = database.ref('leaderboard');
-        const newScoreRef = leaderboardRef.push();
-        newScoreRef.set(newEntry)
-            .then(() => {
-                displayMessage('Your score has been added to the leaderboard!', 'success', 'overlayButtonsMessage');
-                console.log(`Added new leaderboard entry for ${playerName} at Level ${level}.`);
-                // Reload the leaderboard
-                loadLeaderboard(updateLeaderboard);
-            })
-            .catch((error) => {
-                displayMessage('Error submitting score.', 'error', 'overlayButtonsMessage');
-                console.error('Error submitting score:', error);
-            });
-
-        // Update UI
-        nameForm.style.display = 'none';
-        overlayButtons.style.display = 'flex';
-        displayMessage('', '', 'nameFormMessage'); // Clear previous messages
-
-        // If the game has reached maxLevel, end the game
-        if (level >= maxLevel) {
-            endGame();
-        }
-    }
-
-    // Load leaderboard from Firebase
-    function loadLeaderboard(callback) {
-        console.log('Loading leaderboard data from Firebase.');
-        const leaderboardRef = database.ref('leaderboard');
-
-        leaderboardRef.once('value')
-            .then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    // Convert the data from an object to an array
-                    leaderboard = Object.values(data);
-                    console.log('Leaderboard data loaded:', leaderboard);
-                } else {
-                    leaderboard = [];
-                    console.log('No leaderboard data available.');
-                }
-                if (callback) callback();
-            })
-            .catch((error) => {
-                console.error('Error loading leaderboard:', error);
-            });
-    }
-
-    function updateLeaderboard() {
-        console.log('Updating leaderboard display.');
-        leaderboardBody.innerHTML = '';
-        leaderboardLevelDisplay.textContent = level;
-
-        // Filter entries for the current level
-        const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
-
-        // Sort entries by score descending
-        currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
-
-        // Calculate pagination
-        totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
-        currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
-        currentPageSpan.textContent = currentPage;
-        totalPagesSpan.textContent = totalPages;
-
-        // Determine the entries for the current page
-        const startIndex = (currentPage - 1) * entriesPerPage;
-        const endIndex = startIndex + entriesPerPage;
-        const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
-
-        if (entriesToDisplay.length === 0) {
-            const row = document.createElement('tr');
-            const noDataCell = document.createElement('td');
-            noDataCell.colSpan = 5;
-            noDataCell.textContent = 'No entries yet for this level.';
-            noDataCell.style.textAlign = 'center';
-            row.appendChild(noDataCell);
-            leaderboardBody.appendChild(row);
-        } else {
-            entriesToDisplay.forEach((entry, index) => {
-                const row = document.createElement('tr');
-
-                const rankCell = document.createElement('td');
-                rankCell.textContent = startIndex + index + 1;
-
-                const nameCell = document.createElement('td');
-                nameCell.textContent = entry.name;
-
-                const timeCell = document.createElement('td');
-                timeCell.textContent = `${entry.time}s`;
-
-                const clicksCell = document.createElement('td');
-                clicksCell.textContent = entry.clicks;
-                if (entry.missedClick === 'false' || entry.missedClick === false) {
-                    clicksCell.classList.add('no-miss-clicks');
-                }
-
-                const scoreCell = document.createElement('td');
-                scoreCell.textContent = entry.score;
-
-                row.appendChild(rankCell);
-                row.appendChild(nameCell);
-                row.appendChild(timeCell);
-                row.appendChild(clicksCell);
-                row.appendChild(scoreCell);
-
-                leaderboardBody.appendChild(row);
-            });
-        }
-
-        // Update pagination buttons
-        prevPageButton.disabled = currentPage === 1;
-        nextPageButton.disabled = currentPage === totalPages;
-
-        console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
     }
 
     function changePage(newPage) {
@@ -1155,91 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Incorrect password. Scores have not been reset.');
             console.warn('Incorrect password entered for resetting scores.');
         }
-    }
-
-    function resetGame() {
-        console.log('Resetting the game.');
-        confirmationDialog.style.display = 'none';
-        level = 1;
-        currentLevelDisplay.textContent = level;
-        leaderboardLevelDisplay.textContent = level;
-        circles = [];
-        particles = [];
-        clickCount = 0;
-        comboMultiplier = 1;
-        score = 0;
-        missedClick = false;
-        currentPage = 1;
-        gameStarted = false; // Reset gameStarted flag
-        cheatCodePosition = 0; // Reset cheat code position
-        buttonOverlay.style.display = 'none';
-        levelMusic.pause();
-        levelMusic.currentTime = 0;
-
-        // Stop final music if playing
-        finalMusic.pause();
-        finalMusic.currentTime = 0;
-
-        loadLeaderboard(updateLeaderboard);
-
-        // Reset the overlay content
-        const overlayContent = buttonOverlay.querySelector('#overlayContent');
-        overlayContent.innerHTML = '';
-        overlayContent.appendChild(nameForm);
-        overlayContent.appendChild(overlayButtons);
-        nameForm.style.display = 'none';
-        overlayButtons.style.display = 'none';
-
-        // Show the start and rules buttons
-        startGameButton.style.display = 'block';
-        rulesButton.style.display = 'block';
-
-        // Draw the initial screen with the title image
-        drawInitialScreen();
-    }
-
-    function showConfirmationDialog() {
-        console.log('Showing confirmation dialog.');
-        confirmationDialog.style.display = 'flex';
-    }
-
-    // --- Helper Functions ---
-
-    function standardizeName(name) {
-        const trimmedName = name.trim();
-        if (trimmedName.length === 0) return '';
-        return trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1).toLowerCase();
-    }
-
-    function displayMessage(message, type, targetId) {
-        const messageDiv = document.getElementById(targetId);
-        if (messageDiv) {
-            messageDiv.textContent = message;
-            if (type === 'success') {
-                messageDiv.style.color = 'green';
-            } else if (type === 'error') {
-                messageDiv.style.color = 'red';
-            } else if (type === 'info') {
-                messageDiv.style.color = 'blue';
-            } else {
-                messageDiv.style.color = '#333';
-            }
-        }
-    }
-
-    function startNextLevel() {
-        console.log(`Starting next level from Level ${level}.`);
-        level++;
-        currentLevelDisplay.textContent = level;
-        leaderboardLevelDisplay.textContent = level;
-        currentPage = 1;
-        startGame();
-    }
-
-    function tryAgain() {
-        console.log(`Trying again on Level ${level}.`);
-        // Restart the current level
-        startGame();
     }
 
     // Cheat code handling
@@ -1285,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nameForm.style.display = 'none'; // Hide name form
         endLevelScoreDiv.innerHTML = `
             <p>Your Score: <strong>${score}</strong></p>
-            <p>Clicks: <strong>${clickCount}</strong></p>
+            <p>Clicks/Missed: <strong>${clickCount}</strong>/<strong style="color:red;">${missedClicks}</strong></p>
             <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
         `;
     }
@@ -1358,15 +870,20 @@ document.addEventListener('DOMContentLoaded', () => {
             musicToggleButton.textContent = 'Music On';
             introMusic.volume = INTRO_VOLUME;
             levelMusic.volume = LEVEL_VOLUME;
+            finalMusic.volume = FINAL_VOLUME;
 
             // Resume playing music if appropriate
-            if (gameStarted && levelMusic.paused) {
+            if (gameStarted && !levelMusic.paused && level <= maxLevel) {
                 levelMusic.play().catch(error => {
                     console.error('Error playing level music:', error);
                 });
-            } else if (!gameStarted && introMusic.paused && rulesModal.style.display === 'flex') {
+            } else if (!gameStarted && !introMusic.paused && rulesModal.style.display === 'flex') {
                 introMusic.play().catch(error => {
                     console.error('Error playing intro music:', error);
+                });
+            } else if (level >= maxLevel && !finalMusic.paused) {
+                finalMusic.play().catch(error => {
+                    console.error('Error playing final music:', error);
                 });
             }
         } else {
@@ -1374,6 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
             musicToggleButton.textContent = 'Music Off';
             introMusic.pause();
             levelMusic.pause();
+            finalMusic.pause();
         }
     });
 
@@ -1390,5 +908,22 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLeaderboard(updateLeaderboard);
         drawInitialScreen();
     });
+
+    // Start Next Level Function
+    function startNextLevel() {
+        console.log(`Starting next level from Level ${level}.`);
+        level++;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        currentPage = 1;
+        startGame();
+    }
+
+    // Try Again Function
+    function tryAgain() {
+        console.log(`Trying again on Level ${level}.`);
+        // Restart the current level
+        startGame();
+    }
 
 })();

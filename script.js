@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function endLevel() {
+       function endLevel() {
         console.log('Ending level.');
         cancelAnimationFrame(animationId);
         clearInterval(timerInterval);
@@ -529,23 +529,72 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw the initial screen with the title image
         drawInitialScreen();
 
-        // Check if the game has reached maxLevel
+        // Prompt for name after completing the level
+        console.log(`Level ${level} completed. Prompting for player name.`);
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'none';
+        nameForm.style.display = 'flex';
+        nameFormMessage.textContent = ''; // Clear previous messages
+
+        // Display End of Level Score
+        endLevelScoreDiv.innerHTML = `
+            <p>Your Score: <strong>${score}</strong></p>
+            <p>Clicks: <strong>${clickCount}</strong></p>
+            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+        `;
+    }
+
+    function submitScore(event) {
+        event.preventDefault();
+        const playerNameInputValue = playerNameInput.value.trim();
+        if (!playerNameInputValue) {
+            displayMessage('Please enter your name before submitting your score.', 'error', 'nameFormMessage');
+            console.warn('Score submission failed: Player name is empty.');
+            return;
+        }
+
+        // Standardize and limit the player name
+        let playerName = standardizeName(playerNameInputValue);
+        if (playerName.length > 20) {
+            playerName = playerName.substring(0, 20);
+        }
+        console.log(`Player name entered: ${playerName}`);
+
+        // Create the new leaderboard entry
+        const newEntry = {
+            name: playerName,
+            level: level,
+            score: score,
+            clicks: clickCount,
+            time: timeElapsed,
+            missedClick: missedClick
+        };
+
+        // Write the new score to Firebase
+        const leaderboardRef = database.ref('leaderboard');
+        const newScoreRef = leaderboardRef.push();
+        newScoreRef.set(newEntry)
+            .then(() => {
+                displayMessage('Your score has been added to the leaderboard!', 'success', 'overlayButtonsMessage');
+                console.log(`Added new leaderboard entry for ${playerName} at Level ${level}.`);
+                // Reload the leaderboard
+                loadLeaderboard(updateLeaderboard);
+            })
+            .catch((error) => {
+                displayMessage('Error submitting score.', 'error', 'overlayButtonsMessage');
+                console.error('Error submitting score:', error);
+            });
+
+        // Update UI
+        nameForm.style.display = 'none';
+        displayMessage('', '', 'nameFormMessage'); // Clear previous messages
+
         if (level >= maxLevel) {
+            // If the game has reached maxLevel, end the game after submitting the score
             endGame();
         } else {
-            // Prompt for name after completing the level
-            console.log(`Level ${level} completed. Prompting for player name.`);
-            buttonOverlay.style.display = 'flex';
-            overlayButtons.style.display = 'none';
-            nameForm.style.display = 'flex';
-            nameFormMessage.textContent = ''; // Clear previous messages
-
-            // Display End of Level Score
-            endLevelScoreDiv.innerHTML = `
-                <p>Your Score: <strong>${score}</strong></p>
-                <p>Clicks: <strong>${clickCount}</strong></p>
-                <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
-            `;
+            // Show options to proceed to next level or try again
+            overlayButtons.style.display = 'flex';
         }
     }
 

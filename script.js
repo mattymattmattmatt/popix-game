@@ -108,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let circles = [];
     let particles = [];
     let clickCount = 0;
-    let missedClicks = 0; // New variable to track missed clicks
     let comboMultiplier = 1;
     let level = 1;
     let animationId = null;
@@ -123,6 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameStarted = false;
     let score = 0;
     const maxLevel = 10;
+
+    // Track if the player missed any clicks during the level
+    let missedClick = false;
 
     // Pagination variables
     const entriesPerPage = 10;
@@ -262,11 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
         circles = [];
         particles = [];
         clickCount = 0;
-        missedClicks = 0; // Reset missed clicks
         comboMultiplier = 1;
         score = 0;
         startTime = performance.now();
         timeElapsed = 0;
+        missedClick = false; // Reset missedClick flag
         lastPopTime = null; // Reset last pop time
         updateUI();
         loadLeaderboard(updateLeaderboard);
@@ -307,6 +309,128 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000); // Every 2 seconds
 
         animate();
+    }
+
+    function setLevelMusic() {
+        // Pause any existing level music
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+
+        // Set the music source based on the current level
+        const levelNumber = String(level).padStart(2, '0'); // e.g., '01', '02', etc.
+        const musicSrc = `sounds/musiclvl${levelNumber}.mp3`;
+        levelMusic.src = musicSrc;
+
+        if (musicEnabled) {
+            // Play the level music
+            levelMusic.play().then(() => {
+                console.log(`Playing music for Level ${level}: ${musicSrc}`);
+            }).catch(error => {
+                console.error(`Error playing level ${level} music (${musicSrc}):`, error);
+            });
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update and draw particles
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+        });
+        particles = particles.filter(p => p.alpha > 0);
+
+        // Update and draw circles
+        circles.forEach(circle => {
+            circle.update();
+        });
+
+        // Update circles remaining
+        circlesRemainingDisplay.textContent = circles.length;
+
+        // Handle collisions
+        handleCollisions();
+
+        if (circles.length === 0) {
+            console.log('All circles cleared. Ending level.');
+            endLevel();
+        } else {
+            animationId = requestAnimationFrame(animate);
+        }
+    }
+
+    function handleCollisions() {
+        for (let i = 0; i < circles.length; i++) {
+            for (let j = i + 1; j < circles.length; j++) {
+                const c1 = circles[i];
+                const c2 = circles[j];
+                if (detectCollision(c1, c2)) {
+                    resolveCollision(c1, c2);
+                    c1.collide();
+                    c2.collide();
+                }
+            }
+        }
+    }
+
+    function detectCollision(circle1, circle2) {
+        const dx = circle2.x - circle1.x;
+        const dy = circle2.y - circle1.y;
+        const distance = Math.hypot(dx, dy);
+        return distance < (circle1.radius + circle2.radius);
+    }
+
+    function resolveCollision(circle1, circle2) {
+        const dx = circle2.x - circle1.x;
+        const dy = circle2.y - circle1.y;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance === 0) {
+            circle1.x += Math.random() * 0.01;
+            circle1.y += Math.random() * 0.01;
+            return;
+        }
+
+        const overlap = (circle1.radius + circle2.radius) - distance;
+        const correctionRatio = overlap / distance / 2;
+        const correctionX = dx * correctionRatio;
+        const correctionY = dy * correctionRatio;
+
+        circle1.x -= correctionX;
+        circle1.y -= correctionY;
+        circle2.x += correctionX;
+        circle2.y += correctionY;
+
+        const normalX = dx / distance;
+        const normalY = dy / distance;
+
+        const tangentX = -normalY;
+        const tangentY = normalX;
+
+        const dpTan1 = circle1.dx * tangentX + circle1.dy * tangentY;
+        const dpTan2 = circle2.dx * tangentX + circle2.dy * tangentY;
+
+        const dpNorm1 = circle1.dx * normalX + circle1.dy * normalY;
+        const dpNorm2 = circle2.dx * normalX + circle2.dy * normalY;
+
+        const m1 = dpNorm2;
+        const m2 = dpNorm1;
+
+        circle1.dx = tangentX * dpTan1 + normalX * m1;
+        circle1.dy = tangentY * dpTan1 + normalY * m1;
+        circle2.dx = tangentX * dpTan2 + normalX * m2;
+        circle2.dy = tangentY * dpTan2 + normalY * m2;
+    }
+
+    function updateTime() {
+        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+        timeElapsedDisplay.textContent = timeElapsed;
+    }
+
+    function decrementScore() {
+        score = Math.max(0, Math.floor(score * 0.98)); // Decrease by 2% and remove decimals
+        liveScoreDisplay.textContent = score;
     }
 
     function updateUI() {
@@ -384,9 +508,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             comboMultiplier = Math.max(1, comboMultiplier - 0.1);
-            missedClicks++; // Increment missed clicks
+            missedClick = true; // Player missed a click
             updateUI();
         }
+    }
+
+    function createParticleEffect(x, y) {
+        for (let i = 0; i < 10; i++) {
+            const particle = new Particle(x, y);
+            particles.push(particle);
+        }
+    }
+
+function endLevel() {
+        console.log('Ending level.');
+        cancelAnimationFrame(animationId);
+        clearInterval(timerInterval);
+        clearInterval(scoreInterval);
+
+        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
+        timeElapsedDisplay.textContent = timeElapsed;
+
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        // Prompt for name after completing the level
+        console.log(`Level ${level} completed. Prompting for player name.`);
+        buttonOverlay.style.display = 'flex';
+        overlayButtons.style.display = 'none';
+        nameForm.style.display = 'flex';
+        nameFormMessage.textContent = ''; // Clear previous messages
+
+        // Display End of Level Score
+        endLevelScoreDiv.innerHTML = `
+            <p>Your Score: <strong>${score}</strong></p>
+            <p>Clicks: <strong>${clickCount}</strong></p>
+            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+        `;
     }
 
     function submitScore(event) {
@@ -411,8 +572,8 @@ document.addEventListener('DOMContentLoaded', () => {
             level: level,
             score: score,
             clicks: clickCount,
-            missedClicks: missedClicks, // Include missed clicks
-            time: timeElapsed
+            time: timeElapsed,
+            missedClick: missedClick
         };
 
         // Write the new score to Firebase
@@ -446,109 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function updateLeaderboard() {
-        console.log('Updating leaderboard display.');
-        leaderboardBody.innerHTML = '';
-        leaderboardLevelDisplay.textContent = level;
-
-        // Filter entries for the current level
-        const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
-
-        // Sort entries by score descending
-        currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
-
-        // Calculate pagination
-        totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
-        currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
-        currentPageSpan.textContent = currentPage;
-        totalPagesSpan.textContent = totalPages;
-
-        // Determine the entries for the current page
-        const startIndex = (currentPage - 1) * entriesPerPage;
-        const endIndex = startIndex + entriesPerPage;
-        const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
-
-        if (entriesToDisplay.length === 0) {
-            const row = document.createElement('tr');
-            const noDataCell = document.createElement('td');
-            noDataCell.colSpan = 5;
-            noDataCell.textContent = 'No entries yet for this level.';
-            noDataCell.style.textAlign = 'center';
-            row.appendChild(noDataCell);
-            leaderboardBody.appendChild(row);
-        } else {
-            entriesToDisplay.forEach((entry, index) => {
-                const row = document.createElement('tr');
-
-                const rankCell = document.createElement('td');
-                rankCell.textContent = startIndex + index + 1;
-
-                const nameCell = document.createElement('td');
-                nameCell.textContent = entry.name;
-
-                const timeCell = document.createElement('td');
-                timeCell.textContent = `${entry.time}s`;
-
-                const clicksCell = document.createElement('td');
-                // Format clicks and missed clicks
-                const clicksText = document.createElement('span');
-                clicksText.textContent = entry.clicks;
-
-                const slashText = document.createElement('span');
-                slashText.textContent = '/';
-
-                const missedClicksText = document.createElement('span');
-                missedClicksText.textContent = entry.missedClicks || 0; // Default to 0 if undefined
-                missedClicksText.style.color = 'red';
-
-                clicksCell.appendChild(clicksText);
-                clicksCell.appendChild(slashText);
-                clicksCell.appendChild(missedClicksText);
-
-                const scoreCell = document.createElement('td');
-                scoreCell.textContent = entry.score;
-
-                row.appendChild(rankCell);
-                row.appendChild(nameCell);
-                row.appendChild(timeCell);
-                row.appendChild(clicksCell);
-                row.appendChild(scoreCell);
-
-                leaderboardBody.appendChild(row);
-            });
-        }
-
-        // Update pagination buttons
-        prevPageButton.disabled = currentPage === 1;
-        nextPageButton.disabled = currentPage === totalPages;
-
-        console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
-    }
-
-    function getTopScoresPerLevel() {
-        const topScores = [];
-        for (let lvl = 1; lvl <= maxLevel; lvl++) {
-            const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
-            if (entriesForLevel.length > 0) {
-                // Sort entries for this level by score descending
-                entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
-                // Get the top entry
-                topScores.push(entriesForLevel[0]);
-            } else {
-                // No entries for this level
-                topScores.push({
-                    level: lvl,
-                    name: 'N/A',
-                    score: 'N/A',
-                    clicks: 'N/A',
-                    missedClicks: 'N/A',
-                    time: 'N/A'
-                });
-            }
-        }
-        return topScores;
-    }
-
     function endGame() {
         console.log('Game completed all levels.');
         buttonOverlay.style.display = 'flex';
@@ -578,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
-        ['Level', 'Name', 'Score', 'Clicks/Missed', 'Time (s)'].forEach(text => {
+        ['Level', 'Name', 'Score', 'Clicks', 'Time (s)'].forEach(text => {
             const th = document.createElement('th');
             th.textContent = text;
             th.style.border = '1px solid #ccc';
@@ -613,21 +671,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.appendChild(scoreCell);
 
             const clicksCell = document.createElement('td');
-            // Format clicks and missed clicks
-            const clicksText = document.createElement('span');
-            clicksText.textContent = entry.clicks;
-
-            const slashText = document.createElement('span');
-            slashText.textContent = '/';
-
-            const missedClicksText = document.createElement('span');
-            missedClicksText.textContent = entry.missedClicks || 0; // Default to 0 if undefined
-            missedClicksText.style.color = 'red';
-
-            clicksCell.appendChild(clicksText);
-            clicksCell.appendChild(slashText);
-            clicksCell.appendChild(missedClicksText);
-
+            clicksCell.textContent = entry.clicks;
             clicksCell.style.border = '1px solid #ccc';
             clicksCell.style.padding = '6px 8px';
             row.appendChild(clicksCell);

@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetScoresButton = document.getElementById('resetScoresButton');
     const nameForm = document.getElementById('nameForm');
     const playerNameInput = document.getElementById('playerName');
+    const leaderboardTable = document.getElementById('leaderboardTable');
     const leaderboardBody = document.getElementById('leaderboardBody');
     const leaderboardLevelDisplay = document.getElementById('leaderboardLevel');
     const clickCountDisplay = document.getElementById('clickCount');
@@ -451,6 +452,26 @@ document.addEventListener('DOMContentLoaded', () => {
         leaderboardBody.innerHTML = '';
         leaderboardLevelDisplay.textContent = level;
 
+        // Create the header row
+        const headerRow = document.createElement('tr');
+        ['#', 'Name', 'Time', 'Clicks/Missed', 'Score'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            th.style.border = '1px solid #ccc';
+            th.style.padding = '6px 8px';
+            th.style.backgroundColor = '#f2f2f2';
+            headerRow.appendChild(th);
+        });
+        // Clear any existing thead and append the new header row
+        let thead = leaderboardTable.querySelector('thead');
+        if (thead) {
+            thead.innerHTML = '';
+        } else {
+            thead = document.createElement('thead');
+            leaderboardTable.insertBefore(thead, leaderboardBody);
+        }
+        thead.appendChild(headerRow);
+
         // Filter entries for the current level
         const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
 
@@ -524,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
     }
-
+    
     function getTopScoresPerLevel() {
         const topScores = [];
         for (let lvl = 1; lvl <= maxLevel; lvl++) {

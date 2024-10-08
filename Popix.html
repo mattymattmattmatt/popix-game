@@ -109,9 +109,9 @@
 
         /* Sound and Music Toggle Buttons Styling */
         #soundToggleButton, #musicToggleButton {
-            padding: 4px 8px; /* Smaller padding */
-            font-size: 12px; /* Smaller font size */
-            background-color: #4CAF50; /* Green */
+            padding: 4px 8px;
+            font-size: 12px;
+            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 5px;
@@ -280,28 +280,6 @@
             margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            max-length: 20;
-        }
-
-        /* Ensuring input does not exceed 20 characters */
-        #playerName {
-            max-length: 20;
-        }
-
-        #nameForm button {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #nameForm button:hover {
-            background-color: #45a049;
         }
 
         /* Overlay Buttons Styling */
@@ -496,9 +474,8 @@
 
         /* Adjust Name Column for Dynamic Width and Limit to 20 Characters */
         #leaderboard th:nth-child(2), #leaderboard td:nth-child(2) {
-            /* Allow the Name column to adjust its width */
             width: auto;
-            max-width: 200px; /* Optional: set a max-width to prevent it from being too wide */
+            max-width: 200px;
         }
 
         /* Highlight Clicks in Gold When No Misses Occur */
@@ -512,9 +489,7 @@
     <div id="mainContainer">
         <!-- Left Panel: Leaderboard -->
         <div id="leftPanel">
-            <!-- Leaderboard Banner -->
             <img id="leaderboardBanner" src="images/PopixBanner.jpg" alt="Leaderboard Banner">
-            <!-- Leaderboard Table -->
             <div id="leaderboard">
                 <h2>Leaderboard Level <span id="leaderboardLevel">1</span></h2>
                 <table>
@@ -528,20 +503,14 @@
                         </tr>
                     </thead>
                     <tbody id="leaderboardBody">
-                        <!-- Leaderboard entries will be injected here -->
                     </tbody>
                 </table>
             </div>
-            <!-- Control Buttons Container -->
             <div id="controlsContainer">
-                <!-- Sound Toggle Button -->
                 <button id="soundToggleButton" title="Toggle Game Sounds">Sound On</button>
-                <!-- Reset Scores Button -->
                 <button id="resetScoresButton">Reset Scores</button>
-                <!-- Music Toggle Button -->
                 <button id="musicToggleButton" title="Toggle Music">Music On</button>
             </div>
-            <!-- Pagination Controls -->
             <div id="paginationControls">
                 <button id="prevPageButton">Previous</button>
                 <span id="currentPage">1</span> / <span id="totalPages">1</span>
@@ -551,7 +520,6 @@
 
         <!-- Right Panel: Game Area -->
         <div id="rightPanel">
-            <!-- Info Panel -->
             <div id="infoPanel">
                 <div>Score: <span id="liveScore">0</span></div>
                 <div>Clicks: <span id="clickCount">0</span></div>
@@ -561,29 +529,21 @@
                 <div>Level: <span id="currentLevel">1</span></div>
             </div>
 
-            <!-- Start Game and Rules Buttons Container -->
             <div id="gameButtons">
-                <!-- Start Game Button -->
                 <button id="startGameButton">Start Game</button>
-                <!-- Rules Button -->
                 <button id="rulesButton">Rules</button>
             </div>
 
-            <!-- Game Canvas -->
             <canvas id="gameCanvas" width="800" height="800"></canvas>
 
-            <!-- Overlay for End of Level: Name Form and Buttons -->
             <div id="buttonOverlay">
                 <div id="overlayContent">
-                    <!-- Name Form -->
                     <form id="nameForm">
                         <input type="text" id="playerName" placeholder="Enter your name" required maxlength="20" />
                         <button type="submit">Submit Score</button>
                         <div id="nameFormMessage"></div>
                     </form>
-                    <!-- Buttons -->
                     <div id="overlayButtons" style="display: none;">
-                        <!-- End of Level Score Display -->
                         <div id="endLevelScore"></div>
                         <button id="nextLevelButton">Play Next Level</button>
                         <button id="tryAgainButton">Try Again</button>
@@ -612,25 +572,25 @@
             <p>
                 Welcome to Popix! Your goal is to click on moving circles to earn points. Each successful click increases your score and combo multiplier.
                 <br><br>
-                **Quick Pops Bonus:** Popping circles quickly increases your combo multiplier more than popping them slowly. The faster you pop, the higher the multiplier increases—up to an additional **0.05** per quick pop. The slowest consecutive pop increases the multiplier by **0.01**.
+                Quick Pops Bonus: Popping circles quickly increases your combo multiplier more than popping them slowly.
                 <br><br>
-                **Missed Click Penalty:** A missed click decreases your multiplier by **0.1**, but it won't go below **1**.
+                Missed Click Penalty: A missed click decreases your multiplier by 0.1, but it won't go below 1.
                 <br><br>
-                As you progress through levels, circles may subdivide into smaller, faster-moving ones, increasing the challenge.
-                <br><br>
-                **Score Decay:** Your score will decrease by **2% every 2 seconds** during gameplay. Ensure you click as quickly and accurately as possible to maximize your score!
-                <br><br>
-                Keep track of your time and clicks to optimize your performance. Strive to achieve the highest score possible by balancing speed and accuracy. Utilize the leaderboard to compare your achievements with other players. Good luck and enjoy the game!
+                Score Decay: Your score will decrease by 2% every 2 seconds during gameplay. Ensure you click as quickly and accurately as possible!
             </p>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase config
+        (() => {
+            'use strict';
+       
+            // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCfgJraRkyM_tPqdiqbqioEl9g7H9P8N5Y",
             authDomain: "popix-c0d04.firebaseapp.com",
@@ -642,91 +602,116 @@
             measurementId: "G-EYZV9SF6SW"
         };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+            firebase.initializeApp(firebaseConfig);
+            firebase.analytics();
+            const database = firebase.database();
 
-        // Canvas and Game Variables
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let circles = [];
-        let particles = [];
-        let clickCount = 0;
-        let comboMultiplier = 1;
-        let level = 1;
-        let animationId = null;
-        let timerInterval = null;
-        let scoreInterval = null;
-        let startTime = 0;
-        let timeElapsed = 0;
-        let score = 0;
-
-        // Leaderboard Variables
-        const entriesPerPage = 10;
-        let currentPage = 1;
-        let totalPages = 1;
-
-        // Firebase Functions
-        function submitScoreFirebase(playerName, level, score, clickCount, timeElapsed) {
-            const newScoreKey = db.ref().child('scores').push().key;
-
-            db.ref('scores/' + newScoreKey).set({
-                name: playerName,
-                level: level,
-                score: score,
-                clicks: clickCount,
-                time: timeElapsed,
-                timestamp: Date.now()
-            }).then(() => {
-                loadLeaderboardFirebase();
-            }).catch(error => {
-                console.error('Error submitting score:', error);
-            });
-        }
-
-        function loadLeaderboardFirebase() {
+            let soundsEnabled = true;
+            let musicEnabled = true;
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const startGameButton = document.getElementById('startGameButton');
+            const rulesButton = document.getElementById('rulesButton');
+            const nameForm = document.getElementById('nameForm');
+            const playerNameInput = document.getElementById('playerName');
             const leaderboardBody = document.getElementById('leaderboardBody');
-            leaderboardBody.innerHTML = '';
+            const leaderboardLevelDisplay = document.getElementById('leaderboardLevel');
+            const clickCountDisplay = document.getElementById('clickCount');
+            const timeElapsedDisplay = document.getElementById('timeElapsed');
+            const comboMultiplierDisplay = document.getElementById('comboMultiplierDisplay');
+            const circlesRemainingDisplay = document.getElementById('circlesRemaining');
+            const currentLevelDisplay = document.getElementById('currentLevel');
+            const liveScoreDisplay = document.getElementById('liveScore');
+            const buttonOverlay = document.getElementById('buttonOverlay');
+            const overlayButtons = document.getElementById('overlayButtons');
+            const endLevelScoreDiv = document.getElementById('endLevelScore');
+            const nameFormMessage = document.getElementById('nameFormMessage');
+            const overlayButtonsMessage = document.getElementById('overlayButtonsMessage');
+            const soundToggleButton = document.getElementById('soundToggleButton');
+            const musicToggleButton = document.getElementById('musicToggleButton');
+            const prevPageButton = document.getElementById('prevPageButton');
+            const nextPageButton = document.getElementById('nextPageButton');
+            const currentPageSpan = document.getElementById('currentPage');
+            const totalPagesSpan = document.getElementById('totalPages');
+            const confirmationDialog = document.getElementById('confirmationDialog');
+            const confirmYesButton = document.getElementById('confirmYesButton');
+            const confirmNoButton = document.getElementById('confirmNoButton');
+            const rulesModal = document.getElementById('rulesModal');
+            const closeRulesButton = document.getElementById('closeRulesButton');
 
-            db.ref('scores').orderByChild('score').limitToLast(10).once('value', snapshot => {
-                const leaderboardEntries = [];
-                snapshot.forEach(childSnapshot => {
-                    leaderboardEntries.push(childSnapshot.val());
+            let circles = [];
+            let clickCount = 0;
+            let comboMultiplier = 1;
+            let level = 1;
+            let score = 0;
+            const entriesPerPage = 10;
+            let currentPage = 1;
+            let totalPages = 1;
+
+            function updateUI() {
+                clickCountDisplay.textContent = clickCount;
+                currentLevelDisplay.textContent = level;
+                circlesRemainingDisplay.textContent = circles.length;
+                comboMultiplierDisplay.textContent = comboMultiplier.toFixed(2);
+                liveScoreDisplay.textContent = score;
+            }
+
+            // Submitting score to Firebase Realtime Database
+            function submitScore(event) {
+                event.preventDefault();
+                const playerName = playerNameInput.value.trim();
+                const newEntry = {
+                    name: playerName,
+                    level: level,
+                    score: score,
+                    clicks: clickCount,
+                    time: timeElapsedDisplay.textContent
+                };
+
+                database.ref('leaderboard').push(newEntry).then(() => {
+                    displayMessage('Your score has been added!', 'success', 'overlayButtonsMessage');
+                    loadLeaderboard(updateLeaderboard);
+                }).catch(error => {
+                    displayMessage('Error submitting score.', 'error', 'overlayButtonsMessage');
+                    console.error('Error submitting score:', error);
                 });
-                leaderboardEntries.reverse();
+            }
+
+            // Load leaderboard from Firebase
+            function loadLeaderboard(callback) {
+                database.ref('leaderboard').orderByChild('level').equalTo(level).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    leaderboardBody.innerHTML = '';
+                    let leaderboardEntries = [];
+                    for (let key in data) {
+                        leaderboardEntries.push(data[key]);
+                    }
+                    callback(leaderboardEntries);
+                });
+            }
+
+            function updateLeaderboard(leaderboardEntries) {
+                leaderboardEntries.sort((a, b) => b.score - a.score);
 
                 leaderboardEntries.forEach((entry, index) => {
-                    const row = leaderboardBody.insertRow();
-
-                    const rankCell = row.insertCell(0);
-                    const nameCell = row.insertCell(1);
-                    const timeCell = row.insertCell(2);
-                    const clicksCell = row.insertCell(3);
-                    const scoreCell = row.insertCell(4);
-
-                    rankCell.textContent = index + 1;
-                    nameCell.textContent = entry.name;
-                    timeCell.textContent = `${entry.time}s`;
-                    clicksCell.textContent = entry.clicks;
-                    scoreCell.textContent = entry.score;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${entry.name}</td>
+                        <td>${entry.time}s</td>
+                        <td>${entry.clicks}</td>
+                        <td>${entry.score}</td>
+                    `;
+                    leaderboardBody.appendChild(row);
                 });
-            }).catch(error => {
-                console.error('Error loading leaderboard:', error);
+            }
+
+            nameForm.addEventListener('submit', submitScore);
+            window.addEventListener('load', () => {
+                loadLeaderboard(updateLeaderboard);
             });
-        }
 
-        // Event Handlers for Submitting Score
-        document.getElementById('nameForm').addEventListener('submit', event => {
-            event.preventDefault();
-            const playerName = document.getElementById('playerName').value;
-            submitScoreFirebase(playerName, level, score, clickCount, timeElapsed);
-        });
-
-        // Load the leaderboard on initial load
-        window.addEventListener('load', () => {
-            loadLeaderboardFirebase();
-        });
+        })();
     </script>
 </body>
 </html>

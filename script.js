@@ -66,11 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const musicToggleButton = document.getElementById('musicToggleButton');
     const reportBugButton = document.getElementById('reportBugButton');
 
-    // Add event listener for Report a Bug button
-reportBugButton.addEventListener('click', () => {
-    alert('There are no bugs, you just need to do better!');
-});
-
     // Pagination Elements
     const prevPageButton = document.getElementById('prevPageButton');
     const nextPageButton = document.getElementById('nextPageButton');
@@ -1075,6 +1070,10 @@ function endLevel() {
 
     // --- Event Listener Assignments ---
 
+reportBugButton.addEventListener('click', () => {
+    alert('There are no bugs, you just need to do better!');
+});
+    
     startGameButton.addEventListener('click', () => {
         console.log('Start Game button clicked.');
         startGame();

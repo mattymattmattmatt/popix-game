@@ -148,6 +148,22 @@ body, html {
     font-size: 14px;
 }
 
+/* CSS for the Report a Bug button */
+.report-bug-button {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px; /* Adds space above the button */
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.report-bug-button:hover {
+    background-color: darkred;
+}
 /* Right Panel Styling */
 #rightPanel {
     flex-grow: 1;

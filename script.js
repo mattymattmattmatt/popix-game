@@ -64,6 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlayButtonsMessage = document.getElementById('overlayButtonsMessage');
     const soundToggleButton = document.getElementById('soundToggleButton');
     const musicToggleButton = document.getElementById('musicToggleButton');
+    const reportBugButton = document.getElementById('reportBugButton');
+
+    // Add event listener for Report a Bug button
+reportBugButton.addEventListener('click', () => {
+    alert('There are no bugs, you just need to do better!');
+});
 
     // Pagination Elements
     const prevPageButton = document.getElementById('prevPageButton');

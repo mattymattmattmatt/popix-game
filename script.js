@@ -301,8 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
         circlesRemainingDisplay.textContent = circles.length;
 
         timerInterval = setInterval(() => {
-            updateTime();
-        }, 1000); // Update time every second
+        updateTime();
+        }, 100); // Updates every 0.1 seconds
 
         // Start score decrement interval
         scoreInterval = setInterval(() => {
@@ -425,9 +425,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateTime() {
-        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
-        timeElapsedDisplay.textContent = timeElapsed;
-    }
+    // Calculate the difference in seconds with two decimal points
+    timeElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+    
+    // Update the display with 's' appended
+    timeElapsedDisplay.textContent = `${timeElapsed}s`;
+   }
 
     function decrementScore() {
         score = Math.max(0, Math.floor(score * 0.98)); // Decrease by 2% and remove decimals
@@ -527,8 +530,9 @@ function endLevel() {
         clearInterval(timerInterval);
         clearInterval(scoreInterval);
 
-        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
-        timeElapsedDisplay.textContent = timeElapsed;
+        // Calculate time elapsed with two decimal points
+    timeElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+    timeElapsedDisplay.textContent = `${timeElapsed}s`;
 
         levelMusic.pause();
         levelMusic.currentTime = 0;
@@ -545,10 +549,10 @@ function endLevel() {
 
         // Display End of Level Score
         endLevelScoreDiv.innerHTML = `
-            <p>Your Score: <strong>${score}</strong></p>
-            <p>Clicks: <strong>${clickCount}</strong></p>
-            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
-        `;
+        <p>Your Score: <strong>${score}</strong></p>
+        <p>Clicks: <strong>${clickCount}</strong></p>
+        <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+    `;
     }
 
     function submitScore(event) {
@@ -1047,8 +1051,8 @@ function endLevel() {
         level = 9;
         currentLevelDisplay.textContent = level;
         leaderboardLevelDisplay.textContent = level;
-        timeElapsed = Math.floor((performance.now() - startTime) / 1000);
-        timeElapsedDisplay.textContent = timeElapsed;
+        timeElapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+        timeElapsedDisplay.textContent = `${timeElapsed}s`;
 
         levelMusic.pause();
         levelMusic.currentTime = 0;
@@ -1062,10 +1066,10 @@ function endLevel() {
         overlayButtons.style.display = 'flex';
         nameForm.style.display = 'none'; // Hide name form
         endLevelScoreDiv.innerHTML = `
-            <p>Your Score: <strong>${score}</strong></p>
-            <p>Clicks: <strong>${clickCount}</strong></p>
-            <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
-        `;
+        <p>Your Score: <strong>${score}</strong></p>
+        <p>Clicks: <strong>${clickCount}</strong></p>
+        <p>Time Elapsed: <strong>${timeElapsed} seconds</strong></p>
+    `;
     }
 
     // --- Event Listener Assignments ---

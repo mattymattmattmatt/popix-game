@@ -54,24 +54,45 @@ body, html {
 }
 
 /* Table Styling */
-#leaderboard table {
+#leaderboard table,
+#buttonOverlay table,
+#finalScoreboard table { /* Apply same table styles to all tables, including the finalScoreboard table */
     width: 100%;
     border-collapse: collapse;
-    table-layout: auto;
+    table-layout: auto; /* Allows columns to adjust based on content */
 }
 
-#leaderboard th, #leaderboard td {
+#leaderboard th,
+#leaderboard td,
+#buttonOverlay th,
+#buttonOverlay td,
+#finalScoreboard th,
+#finalScoreboard td { /* Apply same cell styles to all tables */
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: center;
     font-size: 14px;
-    white-space: nowrap;
+    white-space: nowrap; /* Prevents text from wrapping */
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; /* Adds '...' for overflowing text */
 }
 
-#leaderboard th {
+/* Header Styling */
+#leaderboard th,
+#buttonOverlay th,
+#finalScoreboard th { /* Apply same header styles to all tables */
     background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Remove Specific Column Widths for Tables */
+#leaderboard th,
+#leaderboard td,
+#buttonOverlay th,
+#buttonOverlay td,
+#finalScoreboard th,
+#finalScoreboard td {
+    width: auto; /* Allows columns to adjust automatically */
 }
 
 /* Controls Container Styling */
@@ -148,22 +169,6 @@ body, html {
     font-size: 14px;
 }
 
-/* CSS for the Report a Bug button */
-.report-bug-button {
-    background-color: red;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 15px; /* Adds space above the button */
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.report-bug-button:hover {
-    background-color: darkred;
-}
 /* Right Panel Styling */
 #rightPanel {
     flex-grow: 1;
@@ -265,7 +270,7 @@ canvas {
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.3);
     width: 90%;
-    max-width: 400px;
+    max-width: 600px; /* Increased max-width for better table display */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -431,63 +436,62 @@ canvas {
     text-align: center;
 }
 
-/* Responsive Design */
-@media (max-width: 1400px) {
-    #mainContainer {
-        width: 100%;
-        max-width: none;
-    }
-
-    #leftPanel {
-        width: 35%;
-        max-width: 500px;
-    }
-
-    #leaderboardBanner {
-        max-width: 480px;
-    }
-
-    #infoPanel {
-        max-width: 900px;
-    }
-}
-
-@media (max-width: 900px) {
-    #mainContainer {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #leftPanel {
-        width: 80%;
-        max-width: 500px;
-        margin-right: 0;
-        margin-bottom: 20px;
-    }
-
-    #rightPanel {
-        width: 100%;
-    }
-
-    canvas {
-        width: 100%;
-        height: auto;
-    }
-
-    #infoPanel {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-/* Adjust Name Column for Dynamic Width and Limit to 20 Characters */
-#leaderboard th:nth-child(2), #leaderboard td:nth-child(2) {
-    width: auto;
-    max-width: 200px;
-}
-
 /* Highlight Clicks in Gold When No Misses Occur */
 .no-miss-clicks {
     color: gold;
     font-weight: bold;
+}
+
+/* Ensure the tables do not overflow the container */
+#leaderboard,
+#buttonOverlay,
+#finalScoreboard {
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+}
+
+/* Optional: Improve table responsiveness further */
+@media (max-width: 600px) {
+    #leaderboard th, #leaderboard td,
+    #buttonOverlay th, #buttonOverlay td,
+    #finalScoreboard th, #finalScoreboard td {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+
+    /* Hide less important columns on very small screens */
+    #leaderboard th:nth-child(5),
+    #leaderboard td:nth-child(5),
+    #leaderboard th:nth-child(6),
+    #leaderboard td:nth-child(6),
+    #buttonOverlay th:nth-child(5),
+    #buttonOverlay td:nth-child(5),
+    #buttonOverlay th:nth-child(6),
+    #buttonOverlay td:nth-child(6),
+    #finalScoreboard th:nth-child(5),
+    #finalScoreboard td:nth-child(5),
+    #finalScoreboard th:nth-child(6),
+    #finalScoreboard td:nth-child(6) {
+        display: none;
+    }
+}
+
+/* Alternating Row Colors for Better Readability */
+#leaderboard tbody tr:nth-child(even),
+#buttonOverlay tbody tr:nth-child(even),
+#finalScoreboard tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#leaderboard tbody tr:hover,
+#buttonOverlay tbody tr:hover,
+#finalScoreboard tbody tr:hover {
+    background-color: #eaeaea;
+}
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: flex; /* or 'block' based on your layout */
 }

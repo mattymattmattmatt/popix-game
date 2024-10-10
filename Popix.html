@@ -29,6 +29,7 @@
                             <th>Name</th>
                             <th>Time</th>
                             <th>Clicks</th>
+                            <th>Misses</th> <!-- New Column -->
                             <th>Score</th>
                         </tr>
                     </thead>
@@ -47,7 +48,6 @@
                 <span id="currentPage">1</span> / <span id="totalPages">1</span>
                 <button id="nextPageButton">Next</button>
             </div>
-                <button id="reportBugButton" class="report-bug-button">Report a Bug</button>
         </div>
 
         <!-- Right Panel: Game Area -->
@@ -68,26 +68,29 @@
 
             <canvas id="gameCanvas" width="800" height="800"></canvas>
 
-            <div id="buttonOverlay">
-                <div id="overlayContent">
-                    <form id="nameForm">
-                        <input type="text" id="playerName" placeholder="Enter your name" required maxlength="20" />
-                        <button type="submit">Submit Score</button>
-                        <div id="nameFormMessage"></div>
-                    </form>
-                    <div id="overlayButtons" style="display: none;">
-                        <div id="endLevelScore"></div>
-                        <button id="nextLevelButton">Play Next Level</button>
-                        <button id="tryAgainButton">Try Again</button>
-                        <button id="resetGameButton">Reset Game</button>
-                        <div id="overlayButtonsMessage"></div>
-                    </div>
-                </div>
-            </div>
+            <!-- Overlay Content -->
+<div id="buttonOverlay" style="display: none;">
+    <div id="overlayContent">
+        <div id="endLevelScore">
+            <!-- Scores will be injected here by JavaScript -->
+        </div>
+        <form id="nameForm" style="display: none;">
+            <label for="playerName">Enter Your Name:</label>
+            <input type="text" id="playerName" name="playerName" required maxlength="20">
+            <button type="submit">Submit Score</button>
+            <button type="button" id="skipButton">Skip</button>
+            <div id="nameFormMessage"></div>
+        </form>
+        <div id="overlayButtons" style="display: none;">
+            <button id="nextLevelButton">Next Level</button>
+            <button id="tryAgainButton">Try Again</button>
+            <button id="resetGameButton">Reset Game</button>
+            <div id="overlayButtonsMessage"></div>
         </div>
     </div>
+</div>
 
-    <!-- Confirmation Dialog -->
+<!-- Confirmation Dialog -->
     <div id="confirmationDialog">
         <div id="confirmationDialogContent">
             <p>Are you sure you want to reset the game?</p>
@@ -97,7 +100,7 @@
     </div>
 
     <!-- Rules Modal -->
-    <div id="rulesModal">
+    <div id="rulesModal" style="display: none;">
         <div id="rulesContent">
             <button id="closeRulesButton">&times;</button>
             <h2>Game Rules & Features</h2>

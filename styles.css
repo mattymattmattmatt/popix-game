@@ -495,3 +495,34 @@ canvas {
 .visible {
     display: flex; /* or 'block' based on your layout */
 }
+
+/* Gold Row Styling for #1 Rank */
+.gold-row {
+    background-color: gold !important;
+    color: #000; /* Optional: Set text color for better contrast */
+    transition: background-color 0.5s ease;
+}
+
+/* Silver Row Styling for 0 Missed Clicks */
+.silver-row {
+    background-color: #C0C0C0 !important; /* Silver color */
+    color: #000; /* Optional: Set text color for better contrast */
+    transition: background-color 0.5s ease;
+}
+
+/* Optional: Tooltip Styling */
+.gold-row[data-tooltip]:hover::after,
+.silver-row[data-tooltip]:hover::after {
+    content: attr(title);
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 1001;
+    font-size: 12px;
+}

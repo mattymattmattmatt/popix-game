@@ -918,74 +918,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateLeaderboard() {
-        console.log('Updating leaderboard display.');
-        leaderboardBody.innerHTML = '';
-        leaderboardLevelDisplay.textContent = level;
+    console.log('Updating leaderboard display.');
+    leaderboardBody.innerHTML = '';
+    leaderboardLevelDisplay.textContent = level;
 
-        // Filter entries for the current level
-        const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
+    // Filter entries for the current level
+    const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
 
-        // Sort entries by score descending
-        currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
+    // Sort entries by score descending
+    currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
 
-        // Calculate pagination
-        totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
-        currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
-        currentPageSpan.textContent = currentPage;
-        totalPagesSpan.textContent = totalPages;
+    // Calculate pagination
+    totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
+    currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
+    currentPageSpan.textContent = currentPage;
+    totalPagesSpan.textContent = totalPages;
 
-        // Determine the entries for the current page
-        const startIndex = (currentPage - 1) * entriesPerPage;
-        const endIndex = startIndex + entriesPerPage;
-        const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
+    // Determine the entries for the current page
+    const startIndex = (currentPage - 1) * entriesPerPage;
+    const endIndex = startIndex + entriesPerPage;
+    const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
 
-        if (entriesToDisplay.length === 0) {
+    // Identify the top entry overall for gold highlighting
+    const topEntry = currentLevelEntries[0];
+
+    if (entriesToDisplay.length === 0) {
+        const row = document.createElement('tr');
+        const noDataCell = document.createElement('td');
+        noDataCell.colSpan = 6; // Updated colspan to match new table structure
+        noDataCell.textContent = 'No entries yet for this level.';
+        noDataCell.style.textAlign = 'center';
+        row.appendChild(noDataCell);
+        leaderboardBody.appendChild(row);
+    } else {
+        entriesToDisplay.forEach((entry, index) => {
             const row = document.createElement('tr');
-            const noDataCell = document.createElement('td');
-            noDataCell.colSpan = 6; // Updated colspan to match new table structure
-            noDataCell.textContent = 'No entries yet for this level.';
-            noDataCell.style.textAlign = 'center';
-            row.appendChild(noDataCell);
+
+            // Apply gold-row class if this entry is the top entry
+            if (entry === topEntry) {
+                row.classList.add('gold-row');
+                row.title = "Top Player!"; // Tooltip
+            }
+            // Apply silver-row class if missedClicks is 0 (and not the top entry)
+            else if (Number(entry.missedClicks) === 0) {
+                row.classList.add('silver-row');
+                row.title = "Perfect Score (No Misses)"; // Tooltip
+            }
+
+            const rankCell = document.createElement('td');
+            rankCell.textContent = startIndex + index + 1;
+
+            const nameCell = document.createElement('td');
+            nameCell.textContent = entry.name;
+
+            // Optional: Add gold medal emoji for top player
+            if (entry === topEntry) {
+                const goldIcon = document.createElement('span');
+                goldIcon.textContent = " 🥇"; // Gold medal emoji
+                nameCell.appendChild(goldIcon);
+            }
+
+            const timeCell = document.createElement('td');
+            timeCell.textContent = `${entry.time}s`;
+
+            const clicksCell = document.createElement('td');
+            clicksCell.textContent = entry.clicks;
+
+            const missedClicksCell = document.createElement('td');
+            missedClicksCell.textContent = entry.missedClicks;
+
+            const scoreCell = document.createElement('td');
+            scoreCell.textContent = entry.score;
+
+            row.appendChild(rankCell);
+            row.appendChild(nameCell);
+            row.appendChild(timeCell);
+            row.appendChild(clicksCell);
+            row.appendChild(missedClicksCell);
+            row.appendChild(scoreCell);
+
             leaderboardBody.appendChild(row);
-        } else {
-            entriesToDisplay.forEach((entry, index) => {
-                const row = document.createElement('tr');
-
-                const rankCell = document.createElement('td');
-                rankCell.textContent = startIndex + index + 1;
-
-                const nameCell = document.createElement('td');
-                nameCell.textContent = entry.name;
-
-                const timeCell = document.createElement('td');
-                timeCell.textContent = `${entry.time}s`;
-
-                const clicksCell = document.createElement('td');
-                clicksCell.textContent = entry.clicks;
-
-                const missedClicksCell = document.createElement('td');
-                missedClicksCell.textContent = entry.missedClicks;
-
-                const scoreCell = document.createElement('td');
-                scoreCell.textContent = entry.score;
-
-                row.appendChild(rankCell);
-                row.appendChild(nameCell);
-                row.appendChild(timeCell);
-                row.appendChild(clicksCell);
-                row.appendChild(missedClicksCell);
-                row.appendChild(scoreCell);
-
-                leaderboardBody.appendChild(row);
-            });
-        }
-
-        // Update pagination buttons
-        prevPageButton.disabled = currentPage === 1;
-        nextPageButton.disabled = currentPage === totalPages;
-
-        console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
+        });
     }
+
+    // Update pagination buttons
+    prevPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = currentPage === totalPages;
+
+    console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
+}
 
     function changePage(newPage) {
         console.log(`Changing to page ${newPage}.`);

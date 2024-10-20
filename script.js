@@ -71,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPageSpan = document.getElementById('currentPage');
     const totalPagesSpan = document.getElementById('totalPages');
 
+    // Reference to the canvas overlay
+    const canvasOverlay = document.getElementById('canvasOverlay');
+
     // --- Sound effects ---
     const collisionSound = new Audio('sounds/collision.mp3');
     collisionSound.volume = SOUND_VOLUME;
@@ -298,9 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
         hideElement(nameForm); // Hide name form after initial entry
         nameFormMessage.textContent = ''; // Clear previous messages
 
-        // Hide Start Game and Rules buttons once the game has begun
-        hideElement(startGameButton);
-        hideElement(rulesButton);
+        // Hide the Start Game overlay
+        hideElement(canvasOverlay);
 
         // Clear the canvas and hide the title image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -581,10 +583,6 @@ document.addEventListener('DOMContentLoaded', () => {
             hideElement(overlayButtons);
             nameFormMessage.textContent = ''; // Clear previous messages
 
-            // Hide Start Game and Rules buttons once the game has begun
-            hideElement(startGameButton);
-            hideElement(rulesButton);
-
             console.log(`Level ${level} ended. Ready for score submission.`);
         } catch (error) {
             console.error('Error during endLevel:', error);
@@ -596,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Filter leaderboard entries for the current level
         const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
 
-        // Sort entries by score in descending order
+        // Sort entries by score descending
         currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
 
         // Determine the rank
@@ -613,259 +611,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function submitScore(event) {
-    event.preventDefault();
-    console.log(`submitScore called: current level = ${level}, maxLevel = ${maxLevel}`);
+        event.preventDefault();
+        console.log(`submitScore called: current level = ${level}, maxLevel = ${maxLevel}`);
 
-    const playerNameInputValue = playerNameInput.value.trim();
+        const playerNameInputValue = playerNameInput.value.trim();
 
-    // Additional validation: Allow only letters, numbers, and spaces
-    const nameRegex = /^[A-Za-z0-9 ]+$/;
-    if (!nameRegex.test(playerNameInputValue)) {
-        displayMessage('Name can only contain letters, numbers, and spaces.', 'error', 'nameFormMessage');
-        console.warn('Score submission failed: Invalid characters in player name.');
-        return;
-    }
-
-    if (!playerNameInputValue) {
-        displayMessage('Please enter your name before submitting your score.', 'error', 'nameFormMessage');
-        console.warn('Score submission failed: Player name is empty.');
-        return;
-    }
-
-    // Standardize and limit the player name
-    let playerName = standardizeName(playerNameInputValue);
-    if (playerName.length > 20) {
-        playerName = playerName.substring(0, 20);
-    }
-    console.log(`Player name entered: ${playerName}`);
-
-    // Create the new leaderboard entry
-    const newEntry = {
-        name: playerName,
-        level: level,
-        score: score,
-        clicks: clickCount,
-        time: timeElapsed,
-        missedClicks: missedClicks // Updated field
-    };
-
-    // Write the new score to Firebase
-    const leaderboardRef = database.ref('leaderboard');
-    const newScoreRef = leaderboardRef.push();
-    newScoreRef.set(newEntry)
-        .then(() => {
-            displayMessage('Your score has been added to the leaderboard!', 'success', 'overlayButtonsMessage');
-            console.log(`Added new leaderboard entry for ${playerName} at Level ${level}.`);
-            
-            // After successful submission
-            if (level === maxLevel) {
-                console.log('Max level reached. Proceeding to endGame.');
-                loadLeaderboard().then(() => {
-                    console.log('Leaderboard reloaded after submitting max level score.');
-                    setTimeout(() => {
-                        endGame();
-                    }, 2000);
-                }).catch(error => {
-                    console.error('Error loading leaderboard after submitting score:', error);
-                    displayMessage('Error loading leaderboard after submitting score.', 'error', 'overlayButtonsMessage');
-                });
-            } else {
-                // Proceed to next level or try again
-                hideElement(nameForm);
-                showElement(overlayButtons, 'flex');
-                displayMessage('', '', 'nameFormMessage'); // Clear previous messages
-            }
-        })
-        .catch((error) => {
-            console.error('Error writing new score to Firebase:', error);
-            displayMessage('Error submitting your score. Please try again.', 'error', 'overlayButtonsMessage');
-        });
-}
-
-
-    function getTopScoresPerLevel() {
-    const topScores = [];
-    for (let lvl = 1; lvl <= maxLevel; lvl++) {
-        const entriesForLevel = leaderboard.filter(entry => Number(entry.level) === lvl);
-        if (entriesForLevel.length > 0) {
-            // Sort entries for this level by score descending
-            entriesForLevel.sort((a, b) => Number(b.score) - Number(a.score));
-            // Get the top entry
-            topScores.push(entriesForLevel[0]);
-        } else {
-            // No entries for this level
-            topScores.push({
-                level: lvl,
-                name: 'N/A',
-                score: 'N/A',
-                clicks: 'N/A',
-                time: 'N/A',
-                missedClicks: 'N/A'
-            });
+        // Additional validation: Allow only letters, numbers, and spaces
+        const nameRegex = /^[A-Za-z0-9 ]+$/;
+        if (!nameRegex.test(playerNameInputValue)) {
+            displayMessage('Name can only contain letters, numbers, and spaces.', 'error', 'nameFormMessage');
+            console.warn('Score submission failed: Invalid characters in player name.');
+            return;
         }
+
+        if (!playerNameInputValue) {
+            displayMessage('Please enter your name before submitting your score.', 'error', 'nameFormMessage');
+            console.warn('Score submission failed: Player name is empty.');
+            return;
+        }
+
+        // Standardize and limit the player name
+        let playerName = standardizeName(playerNameInputValue);
+        if (playerName.length > 20) {
+            playerName = playerName.substring(0, 20);
+        }
+        console.log(`Player name entered: ${playerName}`);
+
+        // Create the new leaderboard entry
+        const newEntry = {
+            name: playerName,
+            level: level,
+            score: score,
+            clicks: clickCount,
+            time: timeElapsed,
+            missedClicks: missedClicks // Updated field
+        };
+
+        // Write the new score to Firebase
+        const leaderboardRef = database.ref('leaderboard');
+        const newScoreRef = leaderboardRef.push();
+        newScoreRef.set(newEntry)
+            .then(() => {
+                displayMessage('Your score has been added to the leaderboard!', 'success', 'overlayButtonsMessage');
+                console.log(`Added new leaderboard entry for ${playerName} at Level ${level}.`);
+                
+                // After successful submission
+                if (level === maxLevel) {
+                    console.log('Max level reached. Proceeding to endGame.');
+                    loadLeaderboard().then(() => {
+                        console.log('Leaderboard reloaded after submitting max level score.');
+                        setTimeout(() => {
+                            endGame();
+                        }, 2000);
+                    }).catch(error => {
+                        console.error('Error loading leaderboard after submitting score:', error);
+                        displayMessage('Error loading leaderboard after submitting score.', 'error', 'overlayButtonsMessage');
+                    });
+                } else {
+                    // Proceed to next level or try again
+                    hideElement(nameForm);
+                    showElement(overlayButtons, 'flex');
+                    displayMessage('', '', 'nameFormMessage'); // Clear previous messages
+                }
+            })
+            .catch((error) => {
+                console.error('Error writing new score to Firebase:', error);
+                displayMessage('Error submitting your score. Please try again.', 'error', 'overlayButtonsMessage');
+            });
     }
-    return topScores;
-}
-
-    function endGame() {
-    console.log('Game completed all levels.');
-    gameState = 'endGame';
-
-    // Ensure level is set to maxLevel
-    level = maxLevel;
-    currentLevelDisplay.textContent = level;
-    leaderboardLevelDisplay.textContent = level;
-
-    // Show the overlay
-    showElement(buttonOverlay, 'flex');
-
-    // Hide existing elements
-    hideElement(endLevelScoreDiv);
-    hideElement(nameForm);
-    hideElement(overlayButtons);
-
-    // Hide Start Game and Rules buttons
-    hideElement(startGameButton);
-    hideElement(rulesButton);
-
-    // Create or show the final scoreboard container
-    let finalScoreboard = document.getElementById('finalScoreboard');
-    if (!finalScoreboard) {
-        finalScoreboard = document.createElement('div');
-        finalScoreboard.id = 'finalScoreboard';
-        finalScoreboard.style.width = '100%';
-
-        const summaryTitle = document.createElement('h2');
-        summaryTitle.textContent = 'Top Scores Per Level';
-        summaryTitle.style.textAlign = 'center';
-        finalScoreboard.appendChild(summaryTitle);
-
-        const summaryMessage = document.createElement('p');
-        summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
-        finalScoreboard.appendChild(summaryMessage);
-
-        // Create a table container to allow content to flow
-        const tableContainer = document.createElement('div');
-        tableContainer.style.width = '100%'; // Ensure it takes up full width
-
-        const summaryTable = document.createElement('table');
-        summaryTable.style.width = '100%';
-        summaryTable.style.borderCollapse = 'collapse';
-        summaryTable.style.marginBottom = '20px';
-        summaryTable.style.tableLayout = 'auto'; // Allow columns to adjust
-
-        // Add CSS class if using external styles
-        summaryTable.classList.add('summary-table');
-
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Level', 'Name', 'Score', 'Clicks', 'Time (s)', 'Missed Clicks'].forEach((text) => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            // Style the header cells
-            th.style.border = '1px solid #ccc';
-            th.style.padding = '6px 8px';
-            th.style.backgroundColor = '#f2f2f2';
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        summaryTable.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-
-        // **Define topScores here by calling getTopScoresPerLevel()**
-        const topScores = getTopScoresPerLevel();
-
-        topScores.forEach(entry => {
-            const row = document.createElement('tr');
-
-            const levelCell = document.createElement('td');
-            levelCell.textContent = entry.level;
-            levelCell.style.border = '1px solid #ccc';
-            levelCell.style.padding = '6px 8px';
-            row.appendChild(levelCell);
-
-            const nameCell = document.createElement('td');
-            nameCell.textContent = entry.name;
-            nameCell.style.border = '1px solid #ccc';
-            nameCell.style.padding = '6px 8px';
-            row.appendChild(nameCell);
-
-            const scoreCell = document.createElement('td');
-            scoreCell.textContent = entry.score;
-            scoreCell.style.border = '1px solid #ccc';
-            scoreCell.style.padding = '6px 8px';
-            row.appendChild(scoreCell);
-
-            const clicksCell = document.createElement('td');
-            clicksCell.textContent = entry.clicks;
-            clicksCell.style.border = '1px solid #ccc';
-            clicksCell.style.padding = '6px 8px';
-            row.appendChild(clicksCell);
-
-            const timeCell = document.createElement('td');
-            timeCell.textContent = entry.time;
-            timeCell.style.border = '1px solid #ccc';
-            timeCell.style.padding = '6px 8px';
-            row.appendChild(timeCell);
-
-            const missedClicksCell = document.createElement('td');
-            missedClicksCell.textContent = entry.missedClicks;
-            missedClicksCell.style.border = '1px solid #ccc';
-            missedClicksCell.style.padding = '6px 8px';
-            row.appendChild(missedClicksCell);
-
-            tbody.appendChild(row);
-        });
-
-        summaryTable.appendChild(tbody);
-
-        // Append the table to the container and then to the finalScoreboard
-        tableContainer.appendChild(summaryTable);
-        finalScoreboard.appendChild(tableContainer);
-
-        // Reset Game Button
-        const resetButton = document.createElement('button');
-        resetButton.textContent = 'Reset Game';
-        resetButton.id = 'finalResetButton';
-        resetButton.style.padding = '10px 20px';
-        resetButton.style.fontSize = '16px';
-        resetButton.style.backgroundColor = '#4CAF50';
-        resetButton.style.color = 'white';
-        resetButton.style.border = 'none';
-        resetButton.style.borderRadius = '5px';
-        resetButton.style.cursor = 'pointer';
-        resetButton.style.transition = 'background-color 0.3s ease';
-        resetButton.addEventListener('click', resetGame);
-        resetButton.addEventListener('mouseover', () => {
-            resetButton.style.backgroundColor = '#45a049';
-        });
-        resetButton.addEventListener('mouseout', () => {
-            resetButton.style.backgroundColor = '#4CAF50';
-        });
-
-        finalScoreboard.appendChild(resetButton);
-
-        // Append the finalScoreboard to overlayContent
-        const overlayContent = buttonOverlay.querySelector('#overlayContent');
-        overlayContent.appendChild(finalScoreboard);
-    } else {
-        // If it already exists, just show it
-        showElement(finalScoreboard, 'block');
-    }
-
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-
-    // Play final music
-    if (musicEnabled) {
-        finalMusic.play().then(() => {
-            console.log('Playing final scoreboard music.');
-        }).catch(error => {
-            console.error('Error playing final music:', error);
-        });
-    }
-}
 
     function getTopScoresPerLevel() {
         const topScores = [];
@@ -889,6 +702,169 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         return topScores;
+    }
+
+    function endGame() {
+        console.log('Game completed all levels.');
+        gameState = 'endGame';
+
+        // Ensure level is set to maxLevel
+        level = maxLevel;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+
+        // Show the overlay
+        showElement(buttonOverlay, 'flex');
+
+        // Hide existing elements
+        hideElement(endLevelScoreDiv);
+        hideElement(nameForm);
+        hideElement(overlayButtons);
+
+        // Hide Start Game and Rules buttons
+        hideElement(startGameButton);
+        hideElement(rulesButton);
+
+        // Create or show the final scoreboard container
+        let finalScoreboard = document.getElementById('finalScoreboard');
+        if (!finalScoreboard) {
+            finalScoreboard = document.createElement('div');
+            finalScoreboard.id = 'finalScoreboard';
+            finalScoreboard.style.width = '100%';
+
+            const summaryTitle = document.createElement('h2');
+            summaryTitle.textContent = 'Top Scores Per Level';
+            summaryTitle.style.textAlign = 'center';
+            finalScoreboard.appendChild(summaryTitle);
+
+            const summaryMessage = document.createElement('p');
+            summaryMessage.textContent = 'Congratulations on completing all 10 levels! Here are the top scores for each level:';
+            finalScoreboard.appendChild(summaryMessage);
+
+            // Create a table container to allow content to flow
+            const tableContainer = document.createElement('div');
+            tableContainer.style.width = '100%'; // Ensure it takes up full width
+
+            const summaryTable = document.createElement('table');
+            summaryTable.style.width = '100%';
+            summaryTable.style.borderCollapse = 'collapse';
+            summaryTable.style.marginBottom = '20px';
+            summaryTable.style.tableLayout = 'auto'; // Allow columns to adjust
+
+            // Add CSS class if using external styles
+            summaryTable.classList.add('summary-table');
+
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            ['Level', 'Name', 'Score', 'Clicks', 'Time (s)', 'Missed Clicks'].forEach((text) => {
+                const th = document.createElement('th');
+                th.textContent = text;
+                // Style the header cells
+                th.style.border = '1px solid #ccc';
+                th.style.padding = '6px 8px';
+                th.style.backgroundColor = '#f2f2f2';
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            summaryTable.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+
+            // **Define topScores here by calling getTopScoresPerLevel()**
+            const topScores = getTopScoresPerLevel();
+
+            topScores.forEach(entry => {
+                const row = document.createElement('tr');
+
+                const levelCell = document.createElement('td');
+                levelCell.textContent = entry.level;
+                levelCell.style.border = '1px solid #ccc';
+                levelCell.style.padding = '6px 8px';
+                row.appendChild(levelCell);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = entry.name;
+                nameCell.style.border = '1px solid #ccc';
+                nameCell.style.padding = '6px 8px';
+                row.appendChild(nameCell);
+
+                const timeCell = document.createElement('td');
+                timeCell.textContent = `${entry.time}s`;
+                timeCell.style.border = '1px solid #ccc';
+                timeCell.style.padding = '6px 8px';
+                row.appendChild(timeCell);
+
+                const clicksCell = document.createElement('td');
+                clicksCell.textContent = entry.clicks;
+                clicksCell.style.border = '1px solid #ccc';
+                clicksCell.style.padding = '6px 8px';
+                row.appendChild(clicksCell);
+
+                const missedClicksCell = document.createElement('td');
+                missedClicksCell.textContent = entry.missedClicks;
+                missedClicksCell.style.border = '1px solid #ccc';
+                missedClicksCell.style.padding = '6px 8px';
+                row.appendChild(missedClicksCell);
+
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = entry.score;
+                scoreCell.style.border = '1px solid #ccc';
+                scoreCell.style.padding = '6px 8px';
+                row.appendChild(scoreCell);
+
+                tbody.appendChild(row);
+            });
+
+            summaryTable.appendChild(tbody);
+
+            // Append the table to the container and then to the finalScoreboard
+            tableContainer.appendChild(summaryTable);
+            finalScoreboard.appendChild(tableContainer);
+
+            // Reset Game Button
+            const resetButton = document.createElement('button');
+            resetButton.textContent = 'Reset Game';
+            resetButton.id = 'finalResetButton';
+            resetButton.style.padding = '10px 20px';
+            resetButton.style.fontSize = '16px';
+            resetButton.style.backgroundColor = '#4CAF50';
+            resetButton.style.color = 'white';
+            resetButton.style.border = 'none';
+            resetButton.style.borderRadius = '5px';
+            resetButton.style.cursor = 'pointer';
+            resetButton.style.transition = 'background-color 0.3s ease';
+
+            // Corrected event listener to prevent passing event object
+            resetButton.addEventListener('click', () => resetGame());
+
+            resetButton.addEventListener('mouseover', () => {
+                resetButton.style.backgroundColor = '#45a049';
+            });
+            resetButton.addEventListener('mouseout', () => {
+                resetButton.style.backgroundColor = '#4CAF50';
+            });
+
+            finalScoreboard.appendChild(resetButton);
+
+            // Append the finalScoreboard to overlayContent
+            const overlayContent = buttonOverlay.querySelector('#overlayContent');
+            overlayContent.appendChild(finalScoreboard);
+        } else {
+            // If it already exists, just show it
+            showElement(finalScoreboard, 'block');
+        }
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        // Play final music
+        if (musicEnabled) {
+            finalMusic.play().then(() => {
+                console.log('Playing final scoreboard music.');
+            }).catch(error => {
+                console.error('Error playing final music:', error);
+            });
+        }
     }
 
     // Load leaderboard from Firebase
@@ -918,95 +894,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateLeaderboard() {
-    console.log('Updating leaderboard display.');
-    leaderboardBody.innerHTML = '';
-    leaderboardLevelDisplay.textContent = level;
+        console.log('Updating leaderboard display.');
+        leaderboardBody.innerHTML = '';
+        leaderboardLevelDisplay.textContent = level;
 
-    // Filter entries for the current level
-    const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
+        // Filter entries for the current level
+        const currentLevelEntries = leaderboard.filter(entry => Number(entry.level) === level);
 
-    // Sort entries by score descending
-    currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
+        // Sort entries by score descending
+        currentLevelEntries.sort((a, b) => Number(b.score) - Number(a.score));
 
-    // Calculate pagination
-    totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
-    currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
-    currentPageSpan.textContent = currentPage;
-    totalPagesSpan.textContent = totalPages;
+        // Calculate pagination
+        totalPages = Math.ceil(currentLevelEntries.length / entriesPerPage) || 1;
+        currentPage = Math.min(currentPage, totalPages); // Adjust current page if necessary
+        currentPageSpan.textContent = currentPage;
+        totalPagesSpan.textContent = totalPages;
 
-    // Determine the entries for the current page
-    const startIndex = (currentPage - 1) * entriesPerPage;
-    const endIndex = startIndex + entriesPerPage;
-    const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
+        // Determine the entries for the current page
+        const startIndex = (currentPage - 1) * entriesPerPage;
+        const endIndex = startIndex + entriesPerPage;
+        const entriesToDisplay = currentLevelEntries.slice(startIndex, endIndex);
 
-    // Identify the top entry overall for gold highlighting
-    const topEntry = currentLevelEntries[0];
+        // Identify the top entry overall for gold highlighting
+        const topEntry = currentLevelEntries[0];
 
-    if (entriesToDisplay.length === 0) {
-        const row = document.createElement('tr');
-        const noDataCell = document.createElement('td');
-        noDataCell.colSpan = 6; // Updated colspan to match new table structure
-        noDataCell.textContent = 'No entries yet for this level.';
-        noDataCell.style.textAlign = 'center';
-        row.appendChild(noDataCell);
-        leaderboardBody.appendChild(row);
-    } else {
-        entriesToDisplay.forEach((entry, index) => {
+        if (entriesToDisplay.length === 0) {
             const row = document.createElement('tr');
-
-            // Apply gold-row class if this entry is the top entry
-            if (entry === topEntry) {
-                row.classList.add('gold-row');
-                row.title = "Top Player!"; // Tooltip
-            }
-            // Apply silver-row class if missedClicks is 0 (and not the top entry)
-            else if (Number(entry.missedClicks) === 0) {
-                row.classList.add('silver-row');
-                row.title = "Perfect Score (No Misses)"; // Tooltip
-            }
-
-            const rankCell = document.createElement('td');
-            rankCell.textContent = startIndex + index + 1;
-
-            const nameCell = document.createElement('td');
-            nameCell.textContent = entry.name;
-
-            // Optional: Add gold medal emoji for top player
-            if (entry === topEntry) {
-                const goldIcon = document.createElement('span');
-                goldIcon.textContent = " 🥇"; // Gold medal emoji
-                nameCell.appendChild(goldIcon);
-            }
-
-            const timeCell = document.createElement('td');
-            timeCell.textContent = `${entry.time}s`;
-
-            const clicksCell = document.createElement('td');
-            clicksCell.textContent = entry.clicks;
-
-            const missedClicksCell = document.createElement('td');
-            missedClicksCell.textContent = entry.missedClicks;
-
-            const scoreCell = document.createElement('td');
-            scoreCell.textContent = entry.score;
-
-            row.appendChild(rankCell);
-            row.appendChild(nameCell);
-            row.appendChild(timeCell);
-            row.appendChild(clicksCell);
-            row.appendChild(missedClicksCell);
-            row.appendChild(scoreCell);
-
+            const noDataCell = document.createElement('td');
+            noDataCell.colSpan = 6; // Updated colspan to match new table structure
+            noDataCell.textContent = 'No entries yet for this level.';
+            noDataCell.style.textAlign = 'center';
+            row.appendChild(noDataCell);
             leaderboardBody.appendChild(row);
-        });
+        } else {
+            entriesToDisplay.forEach((entry, index) => {
+                const row = document.createElement('tr');
+
+                // Apply gold-row class if this entry is the top entry
+                if (entry === topEntry) {
+                    row.classList.add('gold-row');
+                    row.title = "Top Player!"; // Tooltip
+                }
+                // Apply silver-row class if missedClicks is 0 (and not the top entry)
+                else if (Number(entry.missedClicks) === 0) {
+                    row.classList.add('silver-row');
+                    row.title = "Perfect Score (No Misses)"; // Tooltip
+                }
+
+                const rankCell = document.createElement('td');
+                rankCell.textContent = startIndex + index + 1;
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = entry.name;
+
+                // Optional: Add gold medal emoji for top player
+                if (entry === topEntry) {
+                    const goldIcon = document.createElement('span');
+                    goldIcon.textContent = " 🥇"; // Gold medal emoji
+                    nameCell.appendChild(goldIcon);
+                }
+
+                const timeCell = document.createElement('td');
+                timeCell.textContent = `${entry.time}s`;
+
+                const clicksCell = document.createElement('td');
+                clicksCell.textContent = entry.clicks;
+
+                const missedClicksCell = document.createElement('td');
+                missedClicksCell.textContent = entry.missedClicks;
+
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = entry.score;
+
+                row.appendChild(rankCell);
+                row.appendChild(nameCell);
+                row.appendChild(timeCell);
+                row.appendChild(clicksCell);
+                row.appendChild(missedClicksCell);
+                row.appendChild(scoreCell);
+
+                leaderboardBody.appendChild(row);
+            });
+        }
+
+        // Update pagination buttons
+        prevPageButton.disabled = currentPage === 1;
+        nextPageButton.disabled = currentPage === totalPages;
+
+        console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
     }
-
-    // Update pagination buttons
-    prevPageButton.disabled = currentPage === 1;
-    nextPageButton.disabled = currentPage === totalPages;
-
-    console.log(`Leaderboard updated. Level ${level} has ${currentLevelEntries.length} entries.`);
-}
 
     function changePage(newPage) {
         console.log(`Changing to page ${newPage}.`);
@@ -1069,72 +1045,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function resetGame() {
-    console.log('Resetting the game.');
+    /**
+     * Resets the game to a specific level without starting it.
+     * @param {number} newLevel - The level number to reset to. Defaults to 1.
+     */
+    function resetGame(newLevel = 1) {
+        console.log(`Resetting the game to Level ${newLevel}.`);
 
-    // Update game state
-    gameState = 'idle';
+        // Update game state
+        gameState = 'idle';
 
-    // Hide confirmation dialog if visible
-    hideElement(confirmationDialog);
+        // Hide confirmation dialog if visible
+        hideElement(confirmationDialog);
 
-    // Reset game variables
-    level = 1;
-    currentLevelDisplay.textContent = level;
-    leaderboardLevelDisplay.textContent = level;
-    console.log(`Level after reset: ${level}`);
-    circles = [];
-    particles = [];
-    clickCount = 0;
-    comboMultiplier = 1;
-    score = 0;
-    missedClicks = 0;
-    currentPage = 1;
-    gameStarted = false; // Reset gameStarted flag
-    cheatCodePosition = 0; // Reset cheat code position
+        // Reset game variables
+        level = newLevel;
+        currentLevelDisplay.textContent = level;
+        leaderboardLevelDisplay.textContent = level;
+        circles = [];
+        particles = [];
+        clickCount = 0;
+        comboMultiplier = 1;
+        score = 0;
+        missedClicks = 0;
+        currentPage = 1;
+        gameStarted = false; // Reset gameStarted flag
+        cheatCodePosition = 0; // Reset cheat code position
 
-    // Clear timers and intervals
-    if (animationId) cancelAnimationFrame(animationId);
-    if (timerInterval) clearInterval(timerInterval);
-    if (scoreInterval) clearInterval(scoreInterval);
+        // Clear timers and intervals
+        if (animationId) cancelAnimationFrame(animationId);
+        if (timerInterval) clearInterval(timerInterval);
+        if (scoreInterval) clearInterval(scoreInterval);
 
-    // Hide overlays and forms
-    hideElement(buttonOverlay);
-    hideElement(nameForm);
-    hideElement(overlayButtons);
+        // Hide overlays and forms
+        hideElement(buttonOverlay);
+        hideElement(nameForm);
+        hideElement(overlayButtons);
 
-    // Hide the finalScoreboard if it exists
-    const finalScoreboard = document.getElementById('finalScoreboard');
-    if (finalScoreboard) {
-        hideElement(finalScoreboard);
+        // Remove the finalScoreboard from the DOM if it exists
+        const finalScoreboard = document.getElementById('finalScoreboard');
+        if (finalScoreboard) {
+            finalScoreboard.remove();
+        }
+
+        // Show Start Game and Rules buttons
+        showElement(canvasOverlay, 'flex'); // Show the Start Game overlay
+        showElement(rulesButton, 'block');
+
+        // Reset overlay content
+        endLevelScoreDiv.innerHTML = '';
+        nameForm.reset();
+        nameFormMessage.textContent = '';
+        overlayButtonsMessage.textContent = '';
+
+        // Pause and reset music
+        levelMusic.pause();
+        levelMusic.currentTime = 0;
+        finalMusic.pause();
+        finalMusic.currentTime = 0;
+
+        // Reload leaderboard
+        loadLeaderboard().then(updateLeaderboard).catch(error => {
+            console.error('Error loading leaderboard during game reset:', error);
+        });
+
+        // Draw the initial screen with the title image
+        drawInitialScreen();
+
+        console.log(`Game reset: level set to ${level}`);
     }
 
-    // Show Start Game and Rules buttons
-    showElement(startGameButton, 'block');
-    showElement(rulesButton, 'block');
-
-    // Reset overlay content
-    endLevelScoreDiv.innerHTML = '';
-    nameForm.reset();
-    nameFormMessage.textContent = '';
-    overlayButtonsMessage.textContent = '';
-
-    // Pause and reset music
-    levelMusic.pause();
-    levelMusic.currentTime = 0;
-    finalMusic.pause();
-    finalMusic.currentTime = 0;
-
-    // Reload leaderboard
-    loadLeaderboard().then(updateLeaderboard).catch(error => {
-        console.error('Error loading leaderboard during game reset:', error);
-    });
-
-    // Draw the initial screen with the title image
-    drawInitialScreen();
-
-    console.log(`Game reset: level set to ${level}`);
-}
     function showConfirmationDialog() {
         console.log('Showing confirmation dialog.');
         showElement(confirmationDialog, 'flex');
@@ -1165,20 +1145,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startNextLevel() {
-    if (level < maxLevel) {
-        console.log(`Starting next level from Level ${level}.`);
-        level++;
-        currentLevelDisplay.textContent = level;
-        leaderboardLevelDisplay.textContent = level;
-        currentPage = 1;
-        startGame();
+        if (level < maxLevel) {
+            console.log(`Preparing to start Level ${level + 1}.`);
+            level++;
+            currentLevelDisplay.textContent = level;
+            leaderboardLevelDisplay.textContent = level;
+            currentPage = 1;
 
-        console.log(`Next level started: level is now ${level}`);
-    } else {
-        console.log('Max level reached. Proceeding to endGame.');
-        endGame();
+            // Hide overlay elements from the previous level
+            hideElement(overlayButtons);
+            hideElement(endLevelScoreDiv);
+            hideElement(nameForm);
+
+            // Show the Start Game overlay
+            showElement(canvasOverlay, 'flex');
+
+            console.log(`Next level ready to start: Level ${level}`);
+        } else {
+            console.log('Max level reached. Proceeding to endGame.');
+            endGame();
+        }
     }
-}
 
     function tryAgain() {
         console.log(`Trying again on Level ${level}.`);
@@ -1189,6 +1176,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cheat code handling
     function handleKeyPress(event) {
         if (level === 1 && gameStarted) {
+            if (!event.key) {
+                console.warn('handleKeyPress called without a valid key.');
+                return; // Exit the function if event.key is undefined
+            }
+
             const key = event.key.toLowerCase();
             if (key === cheatCode[cheatCodePosition]) {
                 cheatCodePosition++;
@@ -1235,13 +1227,99 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    // --- Level Select Dropdown Handling ---
+
+    // Reference to the level select dropdown
+    const levelSelect = document.getElementById('levelSelect');
+
+    /**
+     * Handles level selection from the dropdown menu.
+     * Skips the game to the selected level.
+     */
+    function handleLevelSelection(event) {
+        const selectedLevel = parseInt(event.target.value);
+        if (isNaN(selectedLevel)) {
+            console.warn('Invalid level selected.');
+            return;
+        }
+
+        if (selectedLevel < 1 || selectedLevel > maxLevel) {
+            console.warn(`Selected level ${selectedLevel} is out of bounds.`);
+            return;
+        }
+
+        console.log(`Level ${selectedLevel} selected from dropdown.`);
+
+        // Confirm with the user before skipping
+        if (confirm(`Are you sure you want to skip to Level ${selectedLevel}?`)) {
+            skipToLevel(selectedLevel);
+        } else {
+            // Reset the dropdown to default if user cancels
+            levelSelect.value = "";
+        }
+    }
+
+    /**
+     * Skips the game to the specified level.
+     * Resets necessary game variables and prepares the selected level.
+     * @param {number} levelNumber - The level number to skip to.
+     */
+    function skipToLevel(levelNumber) {
+        // Validate the level number
+        if (levelNumber < 1 || levelNumber > maxLevel) {
+            alert(`Level ${levelNumber} is not available.`);
+            return;
+        }
+
+        // If a game is currently running, reset it to the selected level
+        if (gameStarted) {
+            console.log('A game is currently running. Resetting before skipping levels.');
+            resetGame(levelNumber);
+        } else {
+            // If no game is running, set the level and show the Start Game overlay
+            level = levelNumber;
+            currentLevelDisplay.textContent = level;
+            leaderboardLevelDisplay.textContent = level;
+            showElement(canvasOverlay, 'flex'); // Show the Start Game overlay
+        }
+
+        console.log(`Skipping to Level ${level}.`);
+
+        // Reset the dropdown to default
+        levelSelect.value = "";
+    }
+
+    /**
+     * Populates the Level Select Dropdown with options 1-10.
+     * Removes existing options (except the first placeholder) and adds new ones.
+     */
+    function populateLevelSelect() {
+        // Clear existing options except the first one
+        levelSelect.innerHTML = '<option value="" disabled selected>Select a level</option>';
+        for (let i = 1; i <= maxLevel; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `Level ${i}`;
+            levelSelect.appendChild(option);
+        }
+    }
+
+    // Populate level select on load
+    populateLevelSelect();
+
+    // Attach the event listener to the dropdown
+    levelSelect.addEventListener('change', handleLevelSelection);
+
     // --- Event Listener Assignments ---
 
+    // Start Game Button Event Listener
     startGameButton.addEventListener('click', () => {
         console.log('Start Game button clicked.');
+        hideElement(canvasOverlay);
         startGame();
     });
 
+    // Rules Button Event Listener
     rulesButton.addEventListener('click', () => {
         console.log('Rules button clicked.');
         rulesModal.style.display = 'flex';
@@ -1252,6 +1330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Close Rules Button Event Listener
     closeRulesButton.addEventListener('click', () => {
         console.log('Close Rules button clicked.');
         rulesModal.style.display = 'none';
@@ -1259,21 +1338,38 @@ document.addEventListener('DOMContentLoaded', () => {
         introMusic.currentTime = 0; // Reset music
     });
 
+    // Next Level Button Event Listener
     nextLevelButton.addEventListener('click', startNextLevel);
+
+    // Try Again Button Event Listener
     tryAgainButton.addEventListener('click', tryAgain);
+
+    // Reset Game Button Event Listener
     resetGameButton.addEventListener('click', showConfirmationDialog);
+
+    // Reset Scores Button Event Listener
     resetScoresButton.addEventListener('click', resetScores);
+
+    // Confirm Yes Button Event Listener
     confirmYesButton.addEventListener('click', () => {
         console.log('Confirm Yes button clicked.');
         hideElement(confirmationDialog);
         resetGame();
     });
+
+    // Confirm No Button Event Listener
     confirmNoButton.addEventListener('click', () => {
         console.log('Confirm No button clicked.');
         hideElement(confirmationDialog);
     });
+
+    // Canvas Click Event Listener
     canvas.addEventListener('pointerdown', handleCanvasClick);
+
+    // Name Form Submit Event Listener
     nameForm.addEventListener('submit', submitScore);
+
+    // Pagination Buttons Event Listeners
     prevPageButton.addEventListener('click', () => changePage(currentPage - 1));
     nextPageButton.addEventListener('click', () => changePage(currentPage + 1));
 
@@ -1325,17 +1421,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Keydown event listener for cheat code
     document.addEventListener('keydown', handleKeyPress);
 
-    // Show the start and rules buttons initially
-    showElement(startGameButton, 'block');
-    showElement(rulesButton, 'block');
-
-    // Load leaderboard on initial page load
+    // Show the Start Game overlay and initialize the game on page load
     window.addEventListener('load', () => {
         console.log('Page loaded. Initializing game.');
         loadLeaderboard().then(updateLeaderboard).catch(error => {
             console.error('Error loading leaderboard on page load:', error);
         });
         drawInitialScreen();
+
+        // Show the Start Game overlay
+        showElement(canvasOverlay, 'flex');
     });
 
+    // --- Additional Function Definitions ---
+
+    /**
+     * Function to handle displaying the start game overlay after a level ends.
+     * This ensures that the user manually starts the next level.
+     */
+    // Already handled in startNextLevel and other functions as shown above.
 });

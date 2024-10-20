@@ -48,6 +48,25 @@
                 <span id="currentPage">1</span> / <span id="totalPages">1</span>
                 <button id="nextPageButton">Next</button>
             </div>
+            
+            <!-- New Level Select Dropdown -->
+            <div id="levelSelectContainer" style="margin-top: 15px; width: 100%; text-align: center;">
+                <label for="levelSelect" style="font-size: 14px; margin-right: 10px;">Select Level:</label>
+                <select id="levelSelect" style="padding: 6px 10px; font-size: 14px; border-radius: 5px;">
+                    <option value="" disabled selected>Select a level</option>
+                    <!-- Dynamically generate options 1-10 -->
+                    <script>
+                        for (let i = 1; i <= 10; i++) {
+                            document.write(`<option value="${i}">Level ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            
+            <!-- Moved Rules Button Below Leaderboard Controls -->
+            <div id="rulesButtonContainer" style="margin-top: 15px;">
+                <button id="rulesButton">Rules</button>
+            </div>
         </div>
 
         <!-- Right Panel: Game Area -->
@@ -61,66 +80,72 @@
                 <div>Level: <span id="currentLevel">1</span></div>
             </div>
 
-            <div id="gameButtons">
-                <button id="startGameButton">Start Game</button>
-                <button id="rulesButton">Rules</button>
+            <!-- Removed the #gameButtons div -->
+
+            <!-- Wrap canvas and overlay in a container -->
+            <div id="canvasContainer">
+                <canvas id="gameCanvas" width="800" height="800"></canvas>
+                <!-- Start Game Overlay -->
+                <div id="canvasOverlay">
+                    <button id="startGameButton">Start Game</button>
+                </div>
             </div>
 
-            <canvas id="gameCanvas" width="800" height="800"></canvas>
-
             <!-- Overlay Content -->
-<div id="buttonOverlay" style="display: none;">
-    <div id="overlayContent">
-        <div id="endLevelScore">
-            <!-- Scores will be injected here by JavaScript -->
-        </div>
-        <form id="nameForm" style="display: none;">
-            <label for="playerName">Enter Your Name:</label>
-            <input type="text" id="playerName" name="playerName" required maxlength="20">
-            <button type="submit">Submit Score</button>
-            <button type="button" id="skipButton">Skip</button>
-            <div id="nameFormMessage"></div>
-        </form>
-        <div id="overlayButtons" style="display: none;">
-            <button id="nextLevelButton">Next Level</button>
-            <button id="tryAgainButton">Try Again</button>
-            <button id="resetGameButton">Reset Game</button>
-            <div id="overlayButtonsMessage"></div>
-        </div>
-    </div>
-</div>
+            <div id="buttonOverlay" style="display: none;">
+                <div id="overlayContent">
+                    <div id="endLevelScore">
+                        <!-- Scores will be injected here by JavaScript -->
+                    </div>
+                    <form id="nameForm" style="display: none;">
+                        <label for="playerName">Enter Your Name:</label>
+                        <input type="text" id="playerName" name="playerName" required maxlength="20">
+                        <button type="submit">Submit Score</button>
+                        <button type="button" id="skipButton">Skip</button>
+                        <div id="nameFormMessage"></div>
+                    </form>
+                    <div id="overlayButtons" style="display: none;">
+                        <button id="nextLevelButton">Next Level</button>
+                        <button id="tryAgainButton">Try Again</button>
+                        <button id="resetGameButton">Reset Game</button>
+                        <div id="overlayButtonsMessage"></div>
+                    </div>
+                </div>
+            </div>
 
-<!-- Confirmation Dialog -->
-    <div id="confirmationDialog">
-        <div id="confirmationDialogContent">
-            <p>Are you sure you want to reset the game?</p>
-            <button id="confirmYesButton">Yes</button>
-            <button id="confirmNoButton">No</button>
-        </div>
-    </div>
+            <!-- Confirmation Dialog -->
+            <div id="confirmationDialog">
+                <div id="confirmationDialogContent">
+                    <p>Are you sure you want to reset the game?</p>
+                    <button id="confirmYesButton">Yes</button>
+                    <button id="confirmNoButton">No</button>
+                </div>
+            </div>
 
-    <!-- Rules Modal -->
-    <div id="rulesModal" style="display: none;">
-        <div id="rulesContent">
-            <button id="closeRulesButton">&times;</button>
-            <h2>Game Rules & Features</h2>
-            <p>
-                Welcome to Popix! Your goal is to click on moving circles to earn points. Each successful click increases your score and combo multiplier.
-                <br><br>
-                <strong>Quick Pops Bonus:</strong> Popping circles quickly increases your combo multiplier more than popping them slowly.
-                <br><br>
-                <strong>Missed Click Penalty:</strong> A missed click decreases your multiplier by 0.1, but it won't go below 1.
-                <br><br>
-                <strong>Score Decay:</strong> Your score will decrease by 2% every 2 seconds during gameplay. Ensure you click as quickly and accurately as possible!
-                <br><br>
-                As you progress through levels, circles may subdivide into smaller, faster-moving ones, increasing the challenge.
-                <br><br>
-                Keep track of your time and clicks to optimize your performance. Strive to achieve the highest score possible by balancing speed and accuracy. Utilize the leaderboard to compare your achievements with other players. Good luck and enjoy the game!
-            </p>
+            <!-- Rules Modal -->
+            <div id="rulesModal" style="display: none;">
+                <div id="rulesContent">
+                    <button id="closeRulesButton">&times;</button>
+                    <h2>Game Rules & Features</h2>
+                    <p>
+                        Welcome to Popix! Your goal is to click on moving circles to earn points. Each successful click increases your score and combo multiplier.
+                        <br><br>
+                        <strong>Quick Pops Bonus:</strong> Popping circles quickly increases your combo multiplier more than popping them slowly.
+                        <br><br>
+                        <strong>Missed Click Penalty:</strong> A missed click decreases your multiplier by 0.1, but it won't go below 1.
+                        <br><br>
+                        <strong>Score Decay:</strong> Your score will decrease by 2% every 2 seconds during gameplay. Ensure you click as quickly and accurately as possible!
+                        <br><br>
+                        As you progress through levels, circles may subdivide into smaller, faster-moving ones, increasing the challenge.
+                        <br><br>
+                        Keep track of your time and clicks to optimize your performance. Strive to achieve the highest score possible by balancing speed and accuracy. Utilize the leaderboard to compare your achievements with other players. Good luck and enjoy the game!
+                    </p>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- Link to External JavaScript -->
-    <script src="script.js"></script>
+        <!-- Link to External JavaScript -->
+        <script src="script.js"></script>
+    </div>
 </body>
 </html>

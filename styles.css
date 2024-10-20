@@ -200,33 +200,16 @@ body, html {
     font-size: 18px;
 }
 
-/* Start Game and Rules Button Container */
-#gameButtons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-/* Start Game Button Styling */
-#startGameButton {
-    font-size: 20px;
-    padding: 12px 24px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-#startGameButton:hover {
-    background-color: #45a049;
-}
-
 /* Rules Button Styling */
-#rulesButton {
+#rulesButtonContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    margin-top: 15px;
+}
+
+#rulesButtonContainer #rulesButton {
     font-size: 14px;
     padding: 8px 16px;
     background-color: #2196F3;
@@ -237,8 +220,45 @@ body, html {
     transition: background-color 0.3s ease;
 }
 
-#rulesButton:hover {
+#rulesButtonContainer #rulesButton:hover {
     background-color: #1976D2;
+}
+
+/* Canvas Container */
+#canvasContainer {
+    position: relative;
+    width: 800px;
+    height: 800px;
+}
+
+/* Canvas Overlay */
+#canvasOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 30; /* Increased z-index to ensure it's above other overlays */
+}
+
+/* Start Game Button inside Canvas Overlay */
+#canvasOverlay #startGameButton {
+    font-size: 24px;
+    padding: 16px 32px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#canvasOverlay #startGameButton:hover {
+    background-color: #45a049;
 }
 
 /* Canvas Styling */
@@ -261,7 +281,7 @@ canvas {
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 20;
+    z-index: 20; /* Lower than #canvasOverlay */
 }
 
 #overlayContent {
@@ -335,8 +355,8 @@ canvas {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 800px;
+    height: 800px;
     background-color: rgba(0,0,0,0.5);
     align-items: center;
     justify-content: center;
@@ -349,6 +369,11 @@ canvas {
     border-radius: 5px;
     text-align: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+#confirmationDialogContent p {
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 #confirmationDialogContent button {
@@ -525,4 +550,14 @@ canvas {
     white-space: nowrap;
     z-index: 1001;
     font-size: 12px;
+}
+
+/* Ensure #buttonOverlay is hidden when #canvasOverlay is active */
+#buttonOverlay.active {
+    display: none;
+}
+
+/* Ensure #canvasOverlay is visible when active */
+#canvasOverlay.active {
+    display: flex;
 }

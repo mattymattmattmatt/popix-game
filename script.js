@@ -1090,6 +1090,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show Start Game and Rules buttons
         showElement(canvasOverlay, 'flex'); // Show the Start Game overlay
+        showElement(startGameButton, 'inline-block'); // Ensure the Start Game button is visible
         showElement(rulesButton, 'block');
 
         // Reset overlay content
@@ -1281,6 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentLevelDisplay.textContent = level;
             leaderboardLevelDisplay.textContent = level;
             showElement(canvasOverlay, 'flex'); // Show the Start Game overlay
+            showElement(startGameButton, 'inline-block'); // Ensure the Start Game button is visible
         }
 
         console.log(`Skipping to Level ${level}.`);

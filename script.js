@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const thead = document.createElement('thead');
             const headerRow = document.createElement('tr');
-            ['Level', 'Name', 'Score', 'Clicks', 'Time (s)', 'Missed Clicks'].forEach((text) => {
+            ['Level', 'Name', 'Time (s)', 'Clicks', 'Missed Clicks', 'Score'].forEach((text) => {
                 const th = document.createElement('th');
                 th.textContent = text;
                 // Style the header cells
@@ -789,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.appendChild(nameCell);
 
                 const timeCell = document.createElement('td');
-                timeCell.textContent = `${entry.time}s`;
+                timeCell.textContent = entry.time === 'N/A' ? 'N/A' : `${entry.time}s`;
                 timeCell.style.border = '1px solid #ccc';
                 timeCell.style.padding = '6px 8px';
                 row.appendChild(timeCell);
